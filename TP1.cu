@@ -8,11 +8,11 @@
 
 //Création d'une matrice (p lignes, n colonnes)
 void MatrixInit(float *M, int n, int p){
-    
+        
     float random_value;
     
     //Valeurs entre -1 et 1
-    for(int i=0; i<n*p; i++){
+    for (int i=0; i<n*p; i++){
         random_value = (float)rand()/(float)(RAND_MAX/1.0);
         M[i] =  random_value;
     }
@@ -21,10 +21,10 @@ void MatrixInit(float *M, int n, int p){
 
 //Affichage d'une matrice
 void MatrixPrint(float *M, int n, int p){
-    
-    for(int i=0; i<p; i++){
-        for(int j=i*n; j<n*(i+1); j++){
-            printf("%f ", M[j]);
+        
+    for (int lig=0; lig<p; lig++){
+        for(int col=lig*n; col<n*(lig+1); col++){
+            printf("%f ", M[col]);
         }
         printf("\n");
     }
@@ -34,7 +34,9 @@ void MatrixPrint(float *M, int n, int p){
 //Addition de deux matrices sur CPU
 void MatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     
-    for(int i=0; i<n*p;i++){
+    printf("Addition from the CPU...\n\n");
+    
+    for (int i=0; i<n*p;i++){
         Mout[i] = M1[i]+M2[i];
     }
     
@@ -43,7 +45,9 @@ void MatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
 //Addition de deux matrices sur GPU
 __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     
-    for(int i=0; i<n*p; i++){
+    printf("Addition from the GPU...\n\n");
+    
+    for (int i=0; i<n*p; i++){
         Mout[i] = M1[i]+M2[i];
     }
 }
@@ -51,26 +55,48 @@ __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
 //Multiplication de deux matrices NxN sur CPU
 void MatrixMult(float *M1, float *M2, float *Mout, int n){
     
+    printf("Multiplication from the CPU...\n\n");
+    
+    for (int lig=0; lig<n; lig++){
+        for (int col=0; col<n; col++){
+            float s = 0.0f;
+            for (int i = 0; i < n; i++) {
+                s += M1[lig * n + i] * M2[i * n + col];
+            }
+            Mout[lig * n + col] = s;
+        }
+    }
 }
 
 
 //Multiplication de deux matrices NxN sur GPU
 __global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
+    printf("Multiplication from the GPU...\n\n");
     
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    float s = 0.0f;
+    
+    if(lig < n && col < n){
+        for (int i = 0; i < n; i++){
+            s += M1[lig * n + i] * M2[i * n + col];
+        }
+    }
+    Mout[lig * n + col] = s;
 }
 
 //Fonction main
 int main(){
     
-    printf("Hello from the CPU!\n\n");
+    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU CPU \\\\\\\\\\\\\\\\\\\\\\\\\
     
     //Test de MatrixInit et MatrixPrint
-    //printf("Here is our matrix!\n\n");
     
     float *M;    
     
-    int n = 5;
-    int p = 5;
+    int n = 2;
+    int p = 2;
     
     //Allocation de la mémoire pour la création de la matrice
     M = (float*)malloc(n * p * sizeof(float));
@@ -94,17 +120,22 @@ int main(){
     
     MatrixInit(M1, n, p);
     MatrixInit(M2, n, p);
-    MatrixAdd(M1, M2, Mout, n, p);
+    //MatrixAdd(M1, M2, Mout, n, p);
+    //MatrixMult(M1, M2, Mout, n);
     
 //     printf("Matrice 1\n");
 //     MatrixPrint(M1, n, p);
 //     printf("\nMatrice 2\n");
 //     MatrixPrint(M2, n, p);
-//     printf("\nMatrice résultante de la somme:\n");
+//     printf("\nMatrice résultante de la mutliplication:\n");
 //     MatrixPrint(Mout, n, p);
 
+    
+    
+    
+    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU GPU \\\\\\\\\\\\\\\\\\\\\\\\\
+    
     //Test de cudaMatrixAdd
-    printf("Hello from the GPU!\n\n");
     float *d_M1, *d_M2, *d_Mout;
     
     //Allocation des mémoires des matrices pour cuda
@@ -116,17 +147,24 @@ int main(){
     cudaMemcpy(d_M2, M2, sizeof(float) * n * p, cudaMemcpyHostToDevice);
 
     //Addition sur GPU
-    cudaMatrixAdd<<<1, n>>>(d_M1, d_M2, d_Mout, n, p);
+    //cudaMatrixAdd<<<1, 1>>>(d_M1, d_M2, d_Mout, n, p);
+    
+    //Multiplication sur GPU
+    cudaMatrixMult<<<n, n>>>(d_M1, d_M2, d_Mout, n);
     
     //Copie du résultat sur CPU
     cudaMemcpy(Mout, d_Mout, sizeof(float)*n*p, cudaMemcpyDeviceToHost);
+    
+    cudaDeviceSynchronize();
     
     printf("Matrice 1\n");
     MatrixPrint(M1, n, p);
     printf("\nMatrice 2\n");
     MatrixPrint(M2, n, p);
-    printf("\nMatrice résultante de la somme:\n");
+    printf("\nMatrice résultante de la Multiplication:\n");
     MatrixPrint(Mout, n, p);
+    
+    
     
     cudaFree(d_M1);
     cudaFree(d_M2);
