@@ -151,7 +151,7 @@ int main(){
     
     //Multiplication sur GPU
     dim3 block_size(n, n);
-    dim3 grid_size(1, 1);
+    dim3 grid_size(1);
     
     cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n);
     cudaDeviceSynchronize();
