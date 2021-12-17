@@ -72,8 +72,7 @@ void MatrixPrint2D(float *M, int n, int p){
 // }
 
 
-__global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne)
-{
+__global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
     //Convolution d'une matrice par un kernel
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
@@ -98,8 +97,7 @@ __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, in
     }
 }
 
-__global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne)
-{
+__global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
     //MeanPool d'une matrice par un kernel 2x2
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
@@ -123,8 +121,29 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
         }
         Mout[lig * Mout_colonne + col] = s;
     }
+}
+
+__global__ void cudaTanh(float* M, float* Mout, int nThreads){
+    
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < nThreads; i+= blockDim.x * gridDim.x){
+        Mout[i] = tanh(M[i]);
+    }
     
 }
+
+
+// __device__ void activation_tanh(float* M){
+    
+//     cudaTanh<<<28, 28>>>(M, M, 28 * 28);
+//     cudaDeviceSynchronize();
+    
+// }
+
+// __global__ void cudaTestTanh(float* M){
+    
+//     activation_tanh(M);
+    
+// }
 
 
 //Fonction main
@@ -182,9 +201,12 @@ int main(){
     dim3 grid_size(1,1);
     
     cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
+    cudaDeviceSynchronize();
+    
+    cudaTanh<<<28, 28>>>(d_C1_data, d_C1_data, 28 * 28);
+    cudaDeviceSynchronize();
     
     cudaMeanPool<<<grid_size,block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
-    
     cudaDeviceSynchronize();
     
     
