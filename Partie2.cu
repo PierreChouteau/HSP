@@ -74,26 +74,57 @@ void MatrixPrint2D(float *M, int n, int p){
 
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne)
 {
-	int lig = blockIdx.y * blockDim.y + threadIdx.y;
-	int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    //Convolution d'une matrice par un kernel
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-	float s = 0.0;
+    float s = 0.0;
 
-	if (lig < Mout_ligne && col < Mout_colonne)
-	{
-		int tot = M_ligne * M_colonne;
+    if (lig < Mout_ligne && col < Mout_colonne)
+    {
+        int tot = M_ligne * M_colonne;
 
-		for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
-			for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
-				for (int n_k = 0; n_k < nb_kernel; n_k++)
-
-					s += M[(lig + kernel_lig) * M_colonne + col + kernel_col + n_k * tot] * kernel[kernel_lig * kernel_size + kernel_col + n_k * nb_kernel];
-			}
-		}
-		Mout[lig * Mout_colonne + col] = s;
-	}
+        for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
+            for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
+                for (int n_k = 0; n_k < nb_kernel; n_k++)
+                {
+                    s += M[(lig + kernel_lig) * M_colonne + col + kernel_col + n_k * tot] * kernel[kernel_lig * kernel_size + kernel_col + n_k * nb_kernel];
+            
+                }
+            }
+        }
+        Mout[lig * Mout_colonne + col] = s;
+    }
 }
 
+__global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne)
+{
+    
+    //MeanPool d'une matrice par un kernel 2x2
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    float s = 0.0;
+    int tot_meanpool = meanpool_size * meanpool_size;
+
+    if (lig < Mout_ligne && col < Mout_colonne)
+    {
+        int tot = M_ligne * M_colonne;
+
+        for (int meanpool_lig = 0; meanpool_lig < meanpool_size; meanpool_lig++) {
+            for (int meanpool_col = 0; meanpool_col < meanpool_size; meanpool_col++) {
+                for (int n_prof = 0; n_prof < profondeur; n_prof++)
+                {
+                    s += M[(lig + meanpool_lig) * M_colonne + col + meanpool_col + n_prof * tot] / tot_meanpool;
+            
+                }
+            }
+        }
+        Mout[lig * Mout_colonne + col] = s;
+    }
+    
+}
 
 
 //Fonction main
@@ -133,34 +164,45 @@ int main(){
     /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU GPU \\\\\\\\\\\\\\\
     
     //Test de cudaMatrixAdd
-    float *d_raw_data, *d_C1_data, *d_C1_kernel;
+    float *d_raw_data, *d_C1_data, *d_C1_kernel, *d_S1_data;
     
     //Allocation des mémoires des matrices pour cuda
     cudaMalloc((void**)&d_raw_data, sizeof(float) * 32 * 32 * 1);
     cudaMalloc((void**)&d_C1_kernel, sizeof(float) * 5 * 5 * 6);
     cudaMalloc((void**)&d_C1_data, sizeof(float) * 28 * 28 * 6);
+    cudaMalloc((void**)&d_S1_data, sizeof(float) * 14 * 14 * 6);
 
     cudaMemcpy(d_raw_data, raw_data, sizeof(float) * 32 * 32 * 1, cudaMemcpyHostToDevice);
     cudaMemcpy(d_C1_kernel, C1_kernel, sizeof(float) * 5 * 5 * 6, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C1_data, C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_S1_data, S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyHostToDevice);
   
     //Convolution sur GPU
     dim3 block_size(32, 32);
     dim3 grid_size(1,1);
     
     cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
+    
+    cudaMeanPool<<<grid_size,block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
+    
     cudaDeviceSynchronize();
     
-    //Copie du résultat sur CPU
+    
+    
+    //Copie des résultats sur CPU
     cudaMemcpy(C1_data, d_C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyDeviceToHost);
+    cudaMemcpy(S1_data, d_S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
-    MatrixPrint2D(C1_data, 28, 28);
+    MatrixPrint2D(S1_data, 14, 14);
     
     cudaFree(d_raw_data);
     cudaFree(d_C1_kernel);
     cudaFree(d_C1_data);
+    cudaFree(d_S1_data);
     
     free(raw_data);
     free(C1_data);
+    free(S1_data);
     free(C1_kernel);
 }
