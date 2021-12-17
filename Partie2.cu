@@ -39,38 +39,60 @@ void MatrixPrint2D(float *M, int n, int p){
 
  //Layer 2 - Convolution 2D
 
-__global__ void cudaConv2D(float *M, float *kernel, float *Mout, int n, int p, int kernel_size, int nb_kernel){
-    //Convolution d'une matrice par un kernel
+// __global__ void cudaConv2D(float *M, float *kernel, float *Mout, int n, int p, int kernel_size, int nb_kernel){
+//     //Convolution d'une matrice par un kernel
     
-    //Calcul de la convolution
-    //définition des index de pixel dans l'image
-    int y = blockIdx.x + (kernel_size - 1)/2; //1 block = 1 ligne de l'image
-    int x = threadIdx.x + (kernel_size - 1)/2; //1 thread = 1 pixel de la ligne
+//     //Calcul de la convolution
+//     //définition des index de pixel dans l'image
+//     int y = blockIdx.x + (kernel_size - 1)/2; //1 block = 1 ligne de l'image
+//     int x = threadIdx.x + (kernel_size - 1)/2; //1 thread = 1 pixel de la ligne
     
-    int c = (kernel_size -1)/2; //centre du kernel
+//     int c = (kernel_size -1)/2; //centre du kernel
     
-    int idx = 0;
+//     int idx = 0;
     
 
-    for (int n_k = 0; n_k<nb_kernel; n_k++){
-        float s = 0.0f;
+//     for (int n_k = 0; n_k<nb_kernel; n_k++){
+//         float s = 0.0f;
 
-        if (idx < n*p*nb_kernel){
-            for (int i = 0; i<kernel_size; i++){
-                for (int j = 0; j<kernel_size; j++){
-                   int iout = j + x - c;
-                   int jout = i + y - c;
-                s += M[jout * n + iout] * kernel[i * kernel_size + j];
-                }
+//         if (idx < n*p*nb_kernel){
+//             for (int i = 0; i<kernel_size; i++){
+//                 for (int j = 0; j<kernel_size; j++){
+//                    int iout = j + x - c;
+//                    int jout = i + y - c;
+//                 s += M[jout * n + iout] * kernel[i * kernel_size + j];
+//                 }
                 
-                Mout[idx] = s;
-                idx +=1;
+//                 Mout[idx] = s;
+//                 idx +=1;
                 
-            }
-        }
-    }
+//             }
+//         }
+//     }
+// }
+
+
+__global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne)
+{
+	int lig = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+	float s = 0.0;
+
+	if (lig < Mout_ligne && col < Mout_colonne)
+	{
+		int tot = M_ligne * M_colonne;
+
+		for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
+			for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
+				for (int n_k = 0; n_k < nb_kernel; n_k++)
+
+					s += M[(lig + kernel_lig) * M_colonne + col + kernel_col + n_k * tot] * kernel[kernel_lig * kernel_size + kernel_col + n_k * nb_kernel];
+			}
+		}
+		Mout[lig * Mout_colonne + col] = s;
+	}
 }
-
 
 
 
@@ -123,9 +145,9 @@ int main(){
   
     //Convolution sur GPU
     dim3 block_size(32, 32);
-    dim3 grid_size(1);
+    dim3 grid_size(1,1);
     
-    cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6);
+    cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
     cudaDeviceSynchronize();
     
     //Copie du résultat sur CPU
