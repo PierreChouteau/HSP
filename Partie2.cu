@@ -37,40 +37,8 @@ void MatrixPrint2D(float *M, int n, int p){
     }
 }
 
- //Layer 2 - Convolution 2D
 
-// __global__ void cudaConv2D(float *M, float *kernel, float *Mout, int n, int p, int kernel_size, int nb_kernel){
-//     //Convolution d'une matrice par un kernel
-    
-//     //Calcul de la convolution
-//     //définition des index de pixel dans l'image
-//     int y = blockIdx.x + (kernel_size - 1)/2; //1 block = 1 ligne de l'image
-//     int x = threadIdx.x + (kernel_size - 1)/2; //1 thread = 1 pixel de la ligne
-    
-//     int c = (kernel_size -1)/2; //centre du kernel
-    
-//     int idx = 0;
-    
-
-//     for (int n_k = 0; n_k<nb_kernel; n_k++){
-//         float s = 0.0f;
-
-//         if (idx < n*p*nb_kernel){
-//             for (int i = 0; i<kernel_size; i++){
-//                 for (int j = 0; j<kernel_size; j++){
-//                    int iout = j + x - c;
-//                    int jout = i + y - c;
-//                 s += M[jout * n + iout] * kernel[i * kernel_size + j];
-//                 }
-                
-//                 Mout[idx] = s;
-//                 idx +=1;
-                
-//             }
-//         }
-//     }
-// }
-
+//Layer 2 - Convolution 2D
 
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
@@ -96,6 +64,9 @@ __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, in
         Mout[lig * Mout_colonne + col] = s;
     }
 }
+
+
+// Layer 3 - Sous-échantillonnage 
 
 __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
@@ -123,27 +94,22 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
     }
 }
 
-__global__ void cudaTanh(float* M, float* Mout, int nThreads){
+
+// Fonction d'activation - Tanh 
+
+__device__ float* activation_tanh(float* M, int nThreads){
     
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < nThreads; i+= blockDim.x * gridDim.x){
-        Mout[i] = tanh(M[i]);
+        M[i] = tanh(M[i]);
     }
     
+    return M;
 }
 
 
-// __device__ void activation_tanh(float* M){
-    
-//     cudaTanh<<<28, 28>>>(M, M, 28 * 28);
-//     cudaDeviceSynchronize();
-    
-// }
-
-// __global__ void cudaTestTanh(float* M){
-    
-//     activation_tanh(M);
-    
-// }
+__global__ void cudaTanh(float* M, int nThreads){
+    activation_tanh(M, nThreads);
+}
 
 
 //Fonction main
@@ -158,7 +124,6 @@ int main(){
     raw_data = (float*)malloc(32 * 32 * 1 * sizeof(float));
     
     MatrixInit(raw_data, 32, 32, 1, 0);
-    //MatrixPrint2D(raw_data, 32, 32);
     
     //Création de la sortie de la conv2D
     float *C1_data;    
@@ -203,7 +168,7 @@ int main(){
     cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
     cudaDeviceSynchronize();
     
-    cudaTanh<<<28, 28>>>(d_C1_data, d_C1_data, 28 * 28);
+    cudaTanh<<<28, 28>>>(d_C1_data, 28*28);
     cudaDeviceSynchronize();
     
     cudaMeanPool<<<grid_size,block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
