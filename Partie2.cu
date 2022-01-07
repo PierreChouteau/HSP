@@ -7,19 +7,32 @@
 //Layer 1 - Génération des données de test (10 décembre 2021)
 
 //Création d'une matrice (p lignes, n colonnes)
-void MatrixInit(float *M, int n, int p, int d, int zero){
-        
+void MatrixInit(float *M, int n, int p, int d, int type){
+
+    //Si on veut initialiser qu'avec des 0, type == 0 
+    // Pour avoir un kernel comme suit, type == 1: 
+    // 0, 0, 0
+    // 0, 1, 0
+    // 0, 0, 0
+    // Pour avoir une initisalisation aléatoire entre 0 et 1, type == 2
+    
     float random_value;
     
-    if (zero==1){
-        for (int i=0; i<n*p*d; i++){
+    if (type == 0){
+        for (int i = 0; i < n * p * d; i++){
             M[i] =  0;
         }
     }
+    else if (type == 1){
+        for (int i = 0; i < n * p * d; i++){
+            M[i] =  0;
+        }
+        M[4] == 1;
+    }
     else{
         //Valeurs entre 0 et 1
-        for (int i=0; i<n*p*d; i++){
-            random_value = (float)rand()/(float)(RAND_MAX/1.0);
+        for (int i = 0; i < n * p * d; i++){
+            random_value = (float)rand() / (float)(RAND_MAX/1.0);
             M[i] =  random_value;
         }
     }
@@ -29,8 +42,8 @@ void MatrixInit(float *M, int n, int p, int d, int zero){
 //Affichage d'une matrice
 void MatrixPrint2D(float *M, int n, int p){
         
-    for (int lig=0; lig<p; lig++){
-        for(int col=lig*n; col<n*(lig+1); col++){
+    for (int lig = 0; lig < p; lig++){
+        for(int col = lig * n; col < n * (lig+1); col++){
             printf("%1.1f ", M[col]);
         }
         printf("\n");
@@ -123,25 +136,25 @@ int main(){
     float *raw_data;    
     raw_data = (float*)malloc(32 * 32 * 1 * sizeof(float));
     
-    MatrixInit(raw_data, 32, 32, 1, 0);
+    MatrixInit(raw_data, 32, 32, 1, 2);
     
     //Création de la sortie de la conv2D
     float *C1_data;    
     C1_data = (float*)malloc(28 * 28 * 6 * sizeof(float));
     
-    MatrixInit(C1_data, 28, 28, 6, 1);
+    MatrixInit(C1_data, 28, 28, 6, 0);
     
     //Création de la sortie du sous-échantillonnage
     float *S1_data;    
     S1_data = (float*)malloc(14 * 14 * 6 * sizeof(float));
     
-    MatrixInit(S1_data, 14, 14, 6, 1);
+    MatrixInit(S1_data, 14, 14, 6, 0);
     
     //Création des premiers noyaux de convolution
     float *C1_kernel;    
     C1_kernel = (float*)malloc(5 * 5 * 6 * sizeof(float));
     
-    MatrixInit(C1_kernel, 5, 5, 6, 0);
+    MatrixInit(C1_kernel, 5, 5, 6, 2);
 
     
     
@@ -168,10 +181,9 @@ int main(){
     cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
     cudaDeviceSynchronize();
     
-    cudaTanh<<<28, 28>>>(d_C1_data, 28*28);
+    cudaTanh<<<grid_size, block_size>>>(d_C1_data, 28*28);
     cudaDeviceSynchronize();
-    
-    cudaMeanPool<<<grid_size,block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
+    cudaMeanPool<<<grid_size, block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
     cudaDeviceSynchronize();
     
     
@@ -181,7 +193,7 @@ int main(){
     cudaMemcpy(S1_data, d_S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
-    MatrixPrint2D(S1_data, 14, 14);
+    MatrixPrint2D(C1_data, 28, 28);
     
     cudaFree(d_raw_data);
     cudaFree(d_C1_kernel);
