@@ -162,6 +162,17 @@ int main(){
     
     MatrixInit(S1_data, 14, 14, 6, 0);
     
+    //Création de la sortie de la conv2D
+    float *C2_data;    
+    C2_data = (float*)malloc(10 * 10 * 6 * sizeof(float));
+    
+    MatrixInit(C2_data, 10, 10, 6, 0);
+    
+    //Création de la sortie du sous-échantillonnage
+    float *S2_data;    
+    S2_data = (float*)malloc(5 * 5 * 6 * sizeof(float));
+    
+    MatrixInit(S1_data, 5, 5, 6, 0);
     
     //Création des premiers noyaux de convolution
     float *C1_kernel;    
@@ -174,18 +185,22 @@ int main(){
     /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU GPU \\\\\\\\\\\\\\\
     
     //Test de cudaMatrixAdd
-    float *d_raw_data, *d_C1_data, *d_C1_kernel, *d_S1_data;
+    float *d_raw_data, *d_C1_data, *d_C1_kernel, *d_S1_data, *d_C2_data, *d_S2_data;
     
     //Allocation des mémoires des matrices pour cuda
     cudaMalloc((void**)&d_raw_data, sizeof(float) * 32 * 32 * 1);
     cudaMalloc((void**)&d_C1_kernel, sizeof(float) * 5 * 5 * 6);
     cudaMalloc((void**)&d_C1_data, sizeof(float) * 28 * 28 * 6);
     cudaMalloc((void**)&d_S1_data, sizeof(float) * 14 * 14 * 6);
+    cudaMalloc((void**)&d_C2_data, sizeof(float) * 10 * 10 * 6);
+    cudaMalloc((void**)&d_S2_data, sizeof(float) * 5 * 5 * 6);
 
     cudaMemcpy(d_raw_data, raw_data, sizeof(float) * 32 * 32 * 1, cudaMemcpyHostToDevice);
     cudaMemcpy(d_C1_kernel, C1_kernel, sizeof(float) * 5 * 5 * 6, cudaMemcpyHostToDevice);
     cudaMemcpy(d_C1_data, C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyHostToDevice);
     cudaMemcpy(d_S1_data, S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C2_data, C2_data, sizeof(float) * 10 * 10 * 16, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_S2_data, S2_data, sizeof(float) * 5 * 5 * 16, cudaMemcpyHostToDevice);
   
     //Process sur GPU
     dim3 block_size(32, 32);
@@ -200,22 +215,37 @@ int main(){
     cudaMeanPool<<<grid_size, block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
     cudaDeviceSynchronize();
     
+    cudaConv2D<<<grid_size,block_size>>>(d_S1_data, d_C1_kernel, d_C2_data, 14, 14, 5, 16, 10, 10);
+    cudaDeviceSynchronize();
+    
+    cudaTanh<<<grid_size, block_size>>>(d_C2_data, 10*10);
+    cudaDeviceSynchronize();
+    
+    cudaMeanPool<<<grid_size, block_size>>>(d_C2_data, d_S2_data, 10, 10, 16, 2, 5, 5);
+    cudaDeviceSynchronize();
+    
     
     
     //Copie des résultats sur CPU
     cudaMemcpy(C1_data, d_C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyDeviceToHost);
     cudaMemcpy(S1_data, d_S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C2_data, d_C2_data, sizeof(float) * 10 * 10 * 6, cudaMemcpyDeviceToHost);
+    cudaMemcpy(S2_data, d_S2_data, sizeof(float) * 5 * 5 * 6, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
-    MatrixPrint2D(S1_data, 14, 14);
+    MatrixPrint2D(S2_data, 5, 5);
     
     cudaFree(d_raw_data);
     cudaFree(d_C1_kernel);
     cudaFree(d_C1_data);
     cudaFree(d_S1_data);
+    cudaFree(d_C2_data);
+    cudaFree(d_S2_data);
     
     free(raw_data);
     free(C1_data);
     free(S1_data);
     free(C1_kernel);
+    free(C2_data);
+    free(S2_data);
 }
