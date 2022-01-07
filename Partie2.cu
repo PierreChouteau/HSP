@@ -27,7 +27,7 @@ void MatrixInit(float *M, int n, int p, int d, int type){
         for (int i = 0; i < n * p * d; i++){
             M[i] =  0;
         }
-        M[4] == 1;
+        M[4] = 1;
     }
     else{
         //Valeurs entre 0 et 1
@@ -90,7 +90,7 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
     float s = 0.0;
     int tot_meanpool = meanpool_size * meanpool_size;
 
-    if (lig < Mout_ligne && col < Mout_colonne)
+    if (lig % meanpool_size == 0 && col % meanpool_size == 0)
     {
         int tot = M_ligne * M_colonne;
 
@@ -103,7 +103,17 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
                 }
             }
         }
-        Mout[lig * Mout_colonne + col] = s;
+        if (lig == 0){
+            Mout[lig * Mout_colonne + (col / meanpool_size)] = s;
+    
+        }
+        else if (col == 0){
+            Mout[(lig / meanpool_size) * Mout_colonne + col] = s;
+    
+        }
+        else{
+            Mout[(lig / meanpool_size) * Mout_colonne + (col / meanpool_size)] = s;
+        }
     }
 }
 
@@ -154,7 +164,7 @@ int main(){
     float *C1_kernel;    
     C1_kernel = (float*)malloc(5 * 5 * 6 * sizeof(float));
     
-    MatrixInit(C1_kernel, 5, 5, 6, 2);
+    MatrixInit(C1_kernel, 5, 5, 6, 1);
 
     
     
@@ -183,9 +193,9 @@ int main(){
     
     cudaTanh<<<grid_size, block_size>>>(d_C1_data, 28*28);
     cudaDeviceSynchronize();
+    
     cudaMeanPool<<<grid_size, block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
     cudaDeviceSynchronize();
-    
     
     
     //Copie des résultats sur CPU
@@ -193,7 +203,7 @@ int main(){
     cudaMemcpy(S1_data, d_S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
-    MatrixPrint2D(C1_data, 28, 28);
+    MatrixPrint2D(S1_data, 14, 14);
     
     cudaFree(d_raw_data);
     cudaFree(d_C1_kernel);
