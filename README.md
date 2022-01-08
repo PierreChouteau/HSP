@@ -1,5 +1,5 @@
 # Hardware for Signal Processing
-TP : Implémentation d'un CNN - LeNet-5 sur GPU
+Implémentation d'un CNN - LeNet-5 sur GPU
 
 Réalisé par : **Elisa DELHOMME & Pierre CHOUTEAU**
 
@@ -7,13 +7,37 @@ Réalisé par : **Elisa DELHOMME & Pierre CHOUTEAU**
 
 ### Prerequisites 
 
-### Installing
+Si vous voulez continuer ce projet, ou bien utiliser une partie de celui-ci, vous n'aurez pas besoin de grand chose. 
+Le langage utilisé pour ce projet est du Cuda, il vous faudra donc a minima un PC avec une carte graphique Nvidia. Sinon, vous ne pourrez pas utiliser les fonctions qui utilisent le GPU. 
+
+#### Quel IDE pour le langage Cuda ? 
+Aujourd'hui le langage Cuda n'est encore présent sur aucun IDE, mais comme la compilation et l'exécution se fait via la console, il est possible d'utiliser n'importe quel IDE. 
+
+Un IDE comprenant la coloration synthaxque du C ou du C++ fait largement l'affaire. Choisissez donc celui qui vous fera plaisir (jupyter-lab, VsCode ou encore sublime text font largement l'affaire)
+
+
+#### Compilation et Execution depuis la console
+
+Pour compiler un code Cuda, il vous suffit de lancer la commande : 
+
+'''
+nvcc nomdufichier.cu -o nomdufichier
+'''
+
+Quand vous aurez fait cela, vous verrez apparaître un fichier portant le nom "nomdufichier". 
+Vous n'avez donc plus qu'à l'exécuter, et là encore, rien de plus simple. Lancer simplement la commande : 
+
+'''
+./nomdufichier
+'''
+
+PS: Pour que ces commandes fonctionnent il faut bien sûr que vous soyez dans votre dossier de travail. Vous pouvez vous déplacer facilement dans les dossier grâce à la commande "cd".
 
 
 ## 1- Objectif
-Les objectif de ce TP sont : 
+Les objectif de ce projet sont : 
 * Apprendre à utiliser CUDA
-* Etudier la complexité de vos algorithmes et l'accélération obtenue sur GPU par rapport à une éxécution sur CPU
+* Etudier la complexité d'algorithmes et l'accélération obtenue sur GPU par rapport à une éxécution sur CPU
 * Observer les limites de l'utilisation d'un GPU
 * Implémenter "from scratch" un CNN : juste la partie inférence et non l'entrainement
 * Exporter des données depuis un notebook python et les réimporter dans un projet cuda
@@ -23,7 +47,7 @@ Les objectif de ce TP sont :
 #### LeNet-5
 A terme, l'objectif final est d'implémenter l'inférence dun CNN très classique : LeNet-5
 
-La lecture de cet article vous apportera les informations nécessaires pour comprendre ce réseau de neurone.
+La lecture de cet article apporte les informations nécessaires pour comprendre ce réseau de neurones.
 
 https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architecture
 
@@ -33,7 +57,7 @@ https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architec
 ## 2- Partie 1. Prise en main de Cuda : Addition et Multiplication de matrices
 
 
-## 3- Partie 2. Premières couches du réseau de neurone LeNet-5 : Convolution 2D et subsampling
+## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
 L'architecture du réseau LeNet-5 est composé de plusieurs couches :
 
 * Layer 1- Couche d'entrée de taille 32x32 correspondant à la taille des images de la base de donnée MNIST
