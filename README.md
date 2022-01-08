@@ -1,6 +1,7 @@
 # Hardware for Signal Processing
-## TP : Implémentation d'un CNN - LeNet-5 sur GPU
-Réalisé par : Elisa DELHOMME && Pierre CHOUTEAU
+TP : Implémentation d'un CNN - LeNet-5 sur GPU
+
+Réalisé par : **Elisa DELHOMME && Pierre CHOUTEAU**
 
 
 ## 1- Objectif & Méthodes de travail
