@@ -73,7 +73,7 @@ void MatrixMult(float *M1, float *M2, float *Mout, int n){
 
 
 //Multiplication de deux matrices NxN sur GPU
-__global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
+__global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n, int p){
     printf("Multiplication from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
@@ -81,7 +81,7 @@ __global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
     
     float s = 0.0f;
     
-    if (lig < n && col < n){
+    if (lig < p && col < n){
         for (int i = 0; i < n; i++){
             s += M1[lig * n + i] * M2[i * n + col];
         }
@@ -152,10 +152,10 @@ int main(){
     //Addition sur GPU
     dim3 block_size(n, p);
     dim3 grid_size(1, 1);
-    cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
+    // cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
     
     //Multiplication sur GPU    
-    //cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n);
+    cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n, p);
     cudaDeviceSynchronize();
     
     
