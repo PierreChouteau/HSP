@@ -6,7 +6,7 @@
 
 //Partie 1 - Prise en main de Cuda (03 décembre 2021)
 
-//Création d'une matrice (p lignes, n colonnes)
+//Création d'une matrice (n lignes, p colonnes)
 void MatrixInit(float *M, int n, int p){
         
     float random_value;
@@ -22,8 +22,8 @@ void MatrixInit(float *M, int n, int p){
 //Affichage d'une matrice
 void MatrixPrint(float *M, int n, int p){
         
-    for (int lig = 0 ; lig < p; lig++){
-        for(int col = lig * n; col < n * (lig+1); col++){
+    for (int lig = 0 ; lig < n; lig++){
+        for(int col = lig * p; col < p * (lig+1); col++){
             printf("%f ", M[col]);
         }
         printf("\n");
@@ -50,8 +50,8 @@ __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     
-    if (lig < p && col < n){
-        Mout[lig * n + col] = M1[lig * n + col] + M2[lig * n + col];
+    if (lig < n && col < p){
+        Mout[lig * p + col] = M1[lig * p + col] + M2[lig * p + col];
     }
 }
 
@@ -85,8 +85,26 @@ __global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
         for (int i = 0; i < n; i++){
             s += M1[lig * n + i] * M2[i * n + col];
         }
+        Mout[lig * n + col] = s;
     }
-    Mout[lig * n + col] = s;
+}
+
+
+//Multiplication d'une matrice NxP avec une PxM sur GPU
+__global__ void cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n, int p, int m){
+    printf("Multiplication from the GPU...\n\n");
+    
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    float s = 0.0f;
+    
+    if (lig < n && col < m){
+        for (int i = 0; i < p; i++){
+            s += M1[lig * p + i] * M2[i * m + col];
+        }
+        Mout[lig * m + col] = s;
+    }
 }
 
 //Fonction main
@@ -96,10 +114,11 @@ int main(){
     
     //Test de MatrixInit et MatrixPrint
     
-    float *M;    
+    float *M;
     
-    int n = 2;
+    int n = 3;
     int p = 2;
+    int m = 3;
     
     //Allocation de la mémoire pour la création de la matrice
     M = (float*)malloc(n * p * sizeof(float));
@@ -118,11 +137,11 @@ int main(){
     
     //Allocation des mémoires
     M1 = (float*)malloc(n * p * sizeof(float));
-    M2 = (float*)malloc(n * p * sizeof(float));
-    Mout = (float*)malloc(n * p * sizeof(float));
+    M2 = (float*)malloc(p * m * sizeof(float));
+    Mout = (float*)malloc(n * m * sizeof(float));
     
     MatrixInit(M1, n, p);
-    MatrixInit(M2, n, p);
+    MatrixInit(M2, p, m);
     //MatrixAdd(M1, M2, Mout, n, p);
     //MatrixMult(M1, M2, Mout, n);
     
@@ -143,32 +162,32 @@ int main(){
     
     //Allocation des mémoires des matrices pour cuda
     cudaMalloc((void**)&d_M1, sizeof(float) * n * p);
-    cudaMalloc((void**)&d_M2, sizeof(float) * n * p);
-    cudaMalloc((void**)&d_Mout, sizeof(float) * n * p);
+    cudaMalloc((void**)&d_M2, sizeof(float) * p * m);
+    cudaMalloc((void**)&d_Mout, sizeof(float) * n * m);
 
     cudaMemcpy(d_M1, M1, sizeof(float) * n * p, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_M2, M2, sizeof(float) * n * p, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_M2, M2, sizeof(float) * p * m, cudaMemcpyHostToDevice);
 
     //Addition sur GPU
-    dim3 block_size(n, p);
+    dim3 block_size(n, m);
     dim3 grid_size(1, 1);
     // cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
     
     //Multiplication sur GPU    
-    cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n);
+    cudaMatrixMultGeneral<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n, p, m);
     cudaDeviceSynchronize();
     
     
     //Copie du résultat sur CPU
-    cudaMemcpy(Mout, d_Mout, sizeof(float) * n * p, cudaMemcpyDeviceToHost);
+    cudaMemcpy(Mout, d_Mout, sizeof(float) * n * m, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
     printf("Matrice 1\n");
     MatrixPrint(M1, n, p);
     printf("\nMatrice 2\n");
-    MatrixPrint(M2, n, p);
+    MatrixPrint(M2, p, m);
     printf("\nMatrice résultante de la Multiplication:\n");
-    MatrixPrint(Mout, n, p);
+    MatrixPrint(Mout, n, m);
     
     cudaFree(d_M1);
     cudaFree(d_M2);
