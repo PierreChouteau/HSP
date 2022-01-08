@@ -12,8 +12,8 @@ void MatrixInit(float *M, int n, int p){
     float random_value;
     
     //Valeurs entre -1 et 1
-    for (int i=0; i<n*p; i++){
-        random_value = (float)rand()/(float)(RAND_MAX/1.0);
+    for (int i = 0; i < n * p; i++){
+        random_value = (float)rand() / (float)(RAND_MAX/1.0);
         M[i] =  random_value;
     }
 }
@@ -22,8 +22,8 @@ void MatrixInit(float *M, int n, int p){
 //Affichage d'une matrice
 void MatrixPrint(float *M, int n, int p){
         
-    for (int lig=0; lig<p; lig++){
-        for(int col=lig*n; col<n*(lig+1); col++){
+    for (int lig = 0 ; lig < p; lig++){
+        for(int col = lig * n; col < n * (lig+1); col++){
             printf("%f ", M[col]);
         }
         printf("\n");
@@ -36,8 +36,8 @@ void MatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     
     printf("Addition from the CPU...\n\n");
     
-    for (int i=0; i<n*p;i++){
-        Mout[i] = M1[i]+M2[i];
+    for (int i = 0; i < n * p; i++){
+        Mout[i] = M1[i] + M2[i];
     }
     
 }
@@ -47,8 +47,11 @@ __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     
     printf("Addition from the GPU...\n\n");
     
-    for (int i=0; i<n*p; i++){
-        Mout[i] = M1[i]+M2[i];
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    if (lig < p && col < n){
+        Mout[lig * n + col] = M1[lig * n + col] + M2[lig * n + col];
     }
 }
 
@@ -78,7 +81,7 @@ __global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
     
     float s = 0.0f;
     
-    if(lig < n && col < n){
+    if (lig < n && col < n){
         for (int i = 0; i < n; i++){
             s += M1[lig * n + i] * M2[i * n + col];
         }
@@ -96,7 +99,7 @@ int main(){
     float *M;    
     
     int n = 2;
-    int p = 2;
+    int p = 3;
     
     //Allocation de la mémoire pour la création de la matrice
     M = (float*)malloc(n * p * sizeof(float));
@@ -139,25 +142,25 @@ int main(){
     float *d_M1, *d_M2, *d_Mout;
     
     //Allocation des mémoires des matrices pour cuda
-    cudaMalloc((void**)&d_M1, sizeof(float)*n*p);
-    cudaMalloc((void**)&d_M2, sizeof(float)*n*p);
-    cudaMalloc((void**)&d_Mout, sizeof(float)*n*p);
+    cudaMalloc((void**)&d_M1, sizeof(float) * n * p);
+    cudaMalloc((void**)&d_M2, sizeof(float) * n * p);
+    cudaMalloc((void**)&d_Mout, sizeof(float) * n * p);
 
     cudaMemcpy(d_M1, M1, sizeof(float) * n * p, cudaMemcpyHostToDevice);
     cudaMemcpy(d_M2, M2, sizeof(float) * n * p, cudaMemcpyHostToDevice);
 
     //Addition sur GPU
-    //cudaMatrixAdd<<<1, 1>>>(d_M1, d_M2, d_Mout, n, p);
+    dim3 block_size(n, p);
+    dim3 grid_size(1, 1);
+    cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
     
-    //Multiplication sur GPU
-    dim3 block_size(n, n);
-    dim3 grid_size(1);
-    
-    cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n);
+    //Multiplication sur GPU    
+    //cudaMatrixMult<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n);
     cudaDeviceSynchronize();
     
+    
     //Copie du résultat sur CPU
-    cudaMemcpy(Mout, d_Mout, sizeof(float)*n*p, cudaMemcpyDeviceToHost);
+    cudaMemcpy(Mout, d_Mout, sizeof(float) * n * p, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
     printf("Matrice 1\n");
