@@ -1,6 +1,6 @@
 # Hardware for Signal Processing
-# TP : Implémentation d'un CNN - LeNet-5 sur GPU
-# Réalisé par : Elisa DELHOMME && Pierre CHOUTEAU
+## TP : Implémentation d'un CNN - LeNet-5 sur GPU
+Réalisé par : Elisa DELHOMME && Pierre CHOUTEAU
 
 
 ## 1- Objectif & Méthodes de travail
@@ -16,6 +16,7 @@ Les objectif de ces 4 séances de TP de HSP sont :
 ### 1.1. Implémentation d'un CNN
 #### LeNet-5
 L'objectif à terme de ces 4 séances est d'implémenter l'inférence dun CNN très classique : LeNet-5
+
 La lecture de cet article vous apportera les informations nécessaires pour comprendre ce réseau de neurone.
 
 https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architecture
