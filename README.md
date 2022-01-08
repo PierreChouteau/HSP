@@ -12,7 +12,8 @@ Réalisé par : **Elisa DELHOMME & Pierre CHOUTEAU**
 
 ## 1- Objectif
 Les objectif de ce TP sont : 
-* Apprendre à utiliser CUDA, Etudier la complexité de vos algorithmes et l'accélération obtenue sur GPU par rapport à une éxécution sur CPU
+* Apprendre à utiliser CUDA
+* Etudier la complexité de vos algorithmes et l'accélération obtenue sur GPU par rapport à une éxécution sur CPU
 * Observer les limites de l'utilisation d'un GPU
 * Implémenter "from scratch" un CNN : juste la partie inférence et non l'entrainement
 * Exporter des données depuis un notebook python et les réimporter dans un projet cuda
