@@ -89,7 +89,7 @@ où **_blockIdx.y_** désigne le numéro de la ligne du _block_ dans la _grid_,
 
 Il est, en outre, nécessaire de définir la fonction avec __global__ afin d’effectuer les calculs sur le GPU en l’appelant depuis le CPU, par exemple dans le cas de l'addition de matrices sur GPU:
 ```
-__global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p)
+__global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p);
 ```
 Ce sera le cas pour toutes les fonctions effectuant des calculs sur le GPU tout en étant appelées depuis le CPU.
 
@@ -122,14 +122,37 @@ L'architecture du réseau LeNet-5 est composé de plusieurs couches :
 * Layer 3- Sous-échantillonnage d'un facteur 2. La taille résultantes des données est donc de 6x14x14.
 
 ### 3.1. Layer 1 - Génération des données de test
+La génération des données consiste en la création des matrices suivantes sous la forme de tableaux à une dimension:
+- la matrice d'entrée dans le réseau 32x32 **raw_data** initialisée avec des valeurs aléatoires entre 0 et 1.
+- la matrice 6x28x28 **C1_data** résultante de la convolution 2D initialisée avec des valeurs nulles.
+- la matrice 6x14x14 **S1_data** résultante du sous-échantillonnage initialisée avec des valeurs nulles.
+- le kernel 6x5x5 **C1_kernel** permettant la convolution de la layer 1 et initialisé entre 0 et 1.
+- 
 ### 3.2. Layer 2 - Convolution 2D
+La convolution se fait exclusivement sur le GPU. De façon analogue à la multiplication, on fait glisser le kernel **C1_kernel** sur la totalité de la matrice **raw_data** pour obtenir la matrice résultante **C1_data**.
+
 ### 3.3. Layer 3 - Sous-échantillonnage
+Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir à moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
+![image](https://user-images.githubusercontent.com/94063629/148692066-4a49d8c4-8e0e-44c3-8275-6ea40f550c4f.png)
+ Il se fait également sur le GPU depuis un appel du CPU.
+
 ### 3.4. Tests
 ### 3.5. Fonctions d'activation
+Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. On choisit une tangente hyperbolique (_tanh_) qui interviendra juste après le _MeanPooling_.
+Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction par le _specifiers_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 
 ## 4- Partie 3. Un peu de Python
 
 ### 4.1. Notebook Python
+Dans cette dernière partie, on utilise le notebook Python comme référence afin de finaliser notre réseau LeNet5.
+En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couches afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
+
 ### 4.2. Création des fonctions manquantes
+On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer uen couche de _Dense_ effectuant l'opération **w.x + b** où w sont les poids et les biais appliqués à l'image d'entrée x.
+Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU.
+
 ### 4.3. Importation du dataset MNIST et affichage des données en console
 ### 4.4. Export des poids dans un fichier .h5
+Après avoir entraîné le réseau dans le notebook et récupéré les poids et biais de chaque couches, on les utilise pour initialiser les _kernels_. 
+
+Le réseau LeNet5 est désormais entièrement focntionnel pour une image d'entrée de dimension 32x32.
