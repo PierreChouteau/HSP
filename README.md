@@ -56,16 +56,16 @@ https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architec
 
 ## 2- Partie 1. Prise en main de Cuda : Addition et Multiplication de matrices
 
-#### Création de matrice
+#### 2.1. Création de matrice
 Dans tout le projet, que ce soit sur CPU ou GPU, on souhaite représenter les matrices sous forme de listes constituées des lignes de la matrice.
 Dans la fonction d'initialisation, on initialise la matrice **N*P** avec des valeurs aléatoires.
 ![image](https://user-images.githubusercontent.com/94063629/148687288-f1d8b3a1-a6b9-4ab7-af0a-11b4140eb562.png)
 
-#### Affichage de matrice sous forme conventionnelle
+#### 2.2. Affichage de matrice sous forme conventionnelle
 La création d'une fonction d’affichage de matrice sous sa forme classique, avec chaque ligne affichée l’une en dessous l’autre, est utile, voire même nécessaire afin de pouvoir vérifier le bon fonctionnement des opérations traitées ou prendre connaissance d'un résultat.
 ![image](https://user-images.githubusercontent.com/94063629/148687259-6fef5698-6d92-4c96-a2bf-ea60d089cf7e.png)
 
-### 2.1. Addition
+### 2.3. Addition
 #### **CPU**
 Sur **CPU**, on additionne deux matrices simplement comme à notre habitude en sommant les coefficients de chacune deux à deux puisque la représentation sous forme de liste n'est pas un frein à cette addition classique.
 ![image](https://user-images.githubusercontent.com/94063629/148687251-c18e9d34-435b-428f-af89-cd3c93302b13.png)
@@ -106,7 +106,7 @@ Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
 
-### 2.2. Multiplication
+### 2.4. Multiplication
 #### **CPU**
 La multiplication de deux matrices sur le CPU se fait de façon habituelle. La seule difficulté réside dans l'indexage correct des coefficients recherchés, les matrices étant sous forme de liste.
 ![image](https://user-images.githubusercontent.com/94063629/148688381-221ddec3-26b4-46ba-b3d4-df48913f3031.png)
