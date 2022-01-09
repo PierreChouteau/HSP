@@ -139,7 +139,7 @@ Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir à 
 ### 3.4. Tests
 ### 3.5. Fonctions d'activation
 Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. On choisit une tangente hyperbolique (_tanh_) qui interviendra juste après le _MeanPooling_.
-Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction par le _specifiers_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
+Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction par le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 
 ## 4- Partie 3. Un peu de Python
 
