@@ -66,11 +66,11 @@ La création d’affichage d’une matrice sous forme plus commune pour l’util
 ![image](https://user-images.githubusercontent.com/94063629/148687259-6fef5698-6d92-4c96-a2bf-ea60d089cf7e.png)
 
 ### Addition
-#### Sur **CPU**
+#### **CPU**
 Sur **CPU**, on additionne deux matrices simplement comme à notre habitude en sommant les coefficients de chacune deux à deux puisque la représentation sous forme de liste n'est pas un frein à cette addition classique.
 ![image](https://user-images.githubusercontent.com/94063629/148687251-c18e9d34-435b-428f-af89-cd3c93302b13.png)
 
-#### Sur **GPU**
+#### **GPU**
 Sur **GPU**, le calcul se base également sur la somme des coefficients deux à deux mais est un peu plus complexe à mettre en oeuvre en raison de la parallélisation des calculs sur GPU.
 En particulier, la définition des indices des coefficients matriciels se fait cette fois via les variables _dim3_ définissant les threads afin de paralléliser (et donc accélérer) les calculs).
 ![image](https://user-images.githubusercontent.com/94063629/148687472-8454bbe7-95fc-4721-b2ce-a9f924f99767.png)
@@ -91,7 +91,7 @@ Il est, en outre, nécessaire de définir la fonction avec __global__ afin d’e
 ```
 __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p);
 ```
-Ce sera le cas pour toutes les fonctions effectuant des calculs sur le GPU tout en étant appelées depuis le CPU.
+Ce sera le cas pour toutes les fonctions effectuant des calculs sur le GPU tout en étant appelé depuis le CPU.
 
 Les mémoires des matrices doivent être allouées sur le GPU avec ```cudaMalloc``` et copiées depuis le CPU vers le GPU avec ```cudaMemcpy```
 Pour que la parallélisation soit fonctionnelle et efficace il est nécessaire de définir **en dehors de la fonction** (dans le main par exemple) les dimensions des variables _dim3_.
@@ -101,25 +101,25 @@ dim3 grid_size(1, 1);
 ```
 où _**n**_ et _**m**_ sont les dimensions de la matrice résultante du calcul.
 
-Enfin, l'appel de la fonction d'addition sur le GPU est appelée via la commmande suivante:
+Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 ```
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
 
 ### Multiplication
-#### Sur **CPU**
+#### **CPU**
 La multiplication de deux matrices sur le CPU se fait de façon habituelle. La seule difficulté réside dans l'indexage correct des coefficients recherchés, les matrices étant sous forme de liste.
 ![image](https://user-images.githubusercontent.com/94063629/148688381-221ddec3-26b4-46ba-b3d4-df48913f3031.png)
 
-#### Sur **GPU**
+#### **GPU**
 Comme pour l'addition, la multiplication sur GPU repose sur le même principe que la multiplication classique mais les indexes lignes et colonnes désirées doivent être définies (exactement selon la même formulation que pour l'addition) avec les variables définissant les threads et blocks.
 
 ## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
 L'architecture du réseau LeNet-5 est composé de plusieurs couches :
 
-* Layer 1- Couche d'entrée de taille 32x32 correspondant à la taille des images de la base de donnée MNIST
-* Layer 2- Convolution avec 6 noyaux de convolution de taille 5x5. La taille résultantes est donc de 6x28x28.
-* Layer 3- Sous-échantillonnage d'un facteur 2. La taille résultantes des données est donc de 6x14x14.
+* Layer 1- Couche d'entrée de taille 32x32 correspondant à la taille des images de la base de données MNIST
+* Layer 2- Convolution avec 6 noyaux de convolution de taille 5x5. La taille résultante est donc de 6x28x28.
+* Layer 3- Sous-échantillonnage d'un facteur 2. La taille résultante des données est donc de 6x14x14.
 
 ### 3.1. Layer 1 - Génération des données de test
 La génération des données consiste en la création des matrices suivantes sous la forme de tableaux à une dimension:
@@ -127,9 +127,9 @@ La génération des données consiste en la création des matrices suivantes sou
 - la matrice 6x28x28 **C1_data** résultante de la convolution 2D initialisée avec des valeurs nulles.
 - la matrice 6x14x14 **S1_data** résultante du sous-échantillonnage initialisée avec des valeurs nulles.
 - le kernel 6x5x5 **C1_kernel** permettant la convolution de la layer 1 et initialisé entre 0 et 1.
-- 
+
 ### 3.2. Layer 2 - Convolution 2D
-La convolution se fait exclusivement sur le GPU. De façon analogue à la multiplication, on fait glisser le kernel **C1_kernel** sur la totalité de la matrice **raw_data** pour obtenir la matrice résultante **C1_data**.
+La convolution se fait exclusivement sur le GPU. De façon analogue à la multiplication, on fait glisser un kernel **C1_kernel** sur la totalité de la matrice **raw_data** pour obtenir la matrice résultante **C1_data**.
 
 ### 3.3. Layer 3 - Sous-échantillonnage
 Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir à moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
@@ -145,14 +145,14 @@ Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis 
 
 ### 4.1. Notebook Python
 Dans cette dernière partie, on utilise le notebook Python comme référence afin de finaliser notre réseau LeNet5.
-En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couches afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
+En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couche afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
 
 ### 4.2. Création des fonctions manquantes
-On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer uen couche de _Dense_ effectuant l'opération **w.x + b** où w sont les poids et les biais appliqués à l'image d'entrée x.
+On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
 Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU.
 
 ### 4.3. Importation du dataset MNIST et affichage des données en console
 ### 4.4. Export des poids dans un fichier .h5
-Après avoir entraîné le réseau dans le notebook et récupéré les poids et biais de chaque couches, on les utilise pour initialiser les _kernels_. 
+Après avoir entraîné le réseau dans le notebook et récupéré les poids et biais de chaque couche, on les utilise pour initialiser les _kernels_. 
 
-Le réseau LeNet5 est désormais entièrement focntionnel pour une image d'entrée de dimension 32x32.
+Le réseau LeNet5 est désormais entièrement fonctionnel pour une image d'entrée de dimensions 32x32.
