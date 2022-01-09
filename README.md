@@ -62,7 +62,7 @@ Dans la fonction d'initialisation, on initialise la matrice **N*P** avec des val
 ![image](https://user-images.githubusercontent.com/94063629/148687288-f1d8b3a1-a6b9-4ab7-af0a-11b4140eb562.png)
 
 #### Affichage de matrice sous forme conventionnelle
-La création d’affichage d’une matrice sous forme plus commune pour l’utilisateur, avec chaque ligne affichée l’une en dessous l’autre, est utile, voire même nécessaire afin de pouvoir vérifier le bon fonctionnement des opérations traitées ou prendre connaissance d'un résultat.
+La création d'une fonction d’affichage de matrice sous sa forme classique, avec chaque ligne affichée l’une en dessous l’autre, est utile, voire même nécessaire afin de pouvoir vérifier le bon fonctionnement des opérations traitées ou prendre connaissance d'un résultat.
 ![image](https://user-images.githubusercontent.com/94063629/148687259-6fef5698-6d92-4c96-a2bf-ea60d089cf7e.png)
 
 ### Addition
@@ -132,20 +132,21 @@ La génération des données consiste en la création des matrices suivantes sou
 La convolution se fait exclusivement sur le GPU. De façon analogue à la multiplication, on fait glisser un kernel **C1_kernel** sur la totalité de la matrice **raw_data** pour obtenir la matrice résultante **C1_data**.
 
 ### 3.3. Layer 3 - Sous-échantillonnage
-Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir à moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
+Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
 ![image](https://user-images.githubusercontent.com/94063629/148692066-4a49d8c4-8e0e-44c3-8275-6ea40f550c4f.png)
- Il se fait également sur le GPU depuis un appel du CPU.
+Celui-ci se fait également sur le GPU depuis un appel du CPU.
 
 ### 3.4. Tests
 ### 3.5. Fonctions d'activation
-Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. On choisit une tangente hyperbolique (_tanh_) qui interviendra juste après le _MeanPooling_.
-Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction par le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
+Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. Comme on peut le remarquer dans l'article sur l'architecture de LeNet-5, la fonction d'activation utilisée est une tangente hyperbolique (_tanh_). Celle-ci interviendra après chaque layer de _Conv2D_.
+Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction avec le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 
 ## 4- Partie 3. Un peu de Python
 
 ### 4.1. Notebook Python
 Dans cette dernière partie, on utilise le notebook Python comme référence afin de finaliser notre réseau LeNet5.
 En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couche afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
+En effet, on ne désire pas créer la fonction d'entrainement du réseau de neurones en Cuda, car cela est beaucoup plus complexe, et nous aurait pris trop de temps à mettre en place. (*Descente de gradient, BackPropagation...*)
 
 ### 4.2. Création des fonctions manquantes
 On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
