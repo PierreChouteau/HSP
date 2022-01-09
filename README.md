@@ -131,6 +131,9 @@ La génération des données consiste en la création des matrices suivantes sou
 ### 3.2. Layer 2 - Convolution 2D
 La convolution se fait exclusivement sur le GPU. De façon analogue à la multiplication, on fait glisser un kernel **C1_kernel** sur la totalité de la matrice **raw_data** pour obtenir la matrice résultante **C1_data**.
 
+![Peek 2022-01-10 00-30](https://user-images.githubusercontent.com/75682374/148705636-8c98babd-8159-4ac1-b08b-8abeef920215.gif)
+
+
 ### 3.3. Layer 3 - Sous-échantillonnage
 Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
 ![image](https://user-images.githubusercontent.com/94063629/148700559-b2a5e8f8-9c98-4717-8b42-48f23100e9c8.png)
