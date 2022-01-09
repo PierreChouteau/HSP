@@ -65,7 +65,7 @@ Dans la fonction d'initialisation, on initialise la matrice **N*P** avec des val
 La création d'une fonction d’affichage de matrice sous sa forme classique, avec chaque ligne affichée l’une en dessous l’autre, est utile, voire même nécessaire afin de pouvoir vérifier le bon fonctionnement des opérations traitées ou prendre connaissance d'un résultat.
 ![image](https://user-images.githubusercontent.com/94063629/148687259-6fef5698-6d92-4c96-a2bf-ea60d089cf7e.png)
 
-### Addition
+### 2.1. Addition
 #### **CPU**
 Sur **CPU**, on additionne deux matrices simplement comme à notre habitude en sommant les coefficients de chacune deux à deux puisque la représentation sous forme de liste n'est pas un frein à cette addition classique.
 ![image](https://user-images.githubusercontent.com/94063629/148687251-c18e9d34-435b-428f-af89-cd3c93302b13.png)
@@ -106,7 +106,7 @@ Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
 
-### Multiplication
+### 2.2. Multiplication
 #### **CPU**
 La multiplication de deux matrices sur le CPU se fait de façon habituelle. La seule difficulté réside dans l'indexage correct des coefficients recherchés, les matrices étant sous forme de liste.
 ![image](https://user-images.githubusercontent.com/94063629/148688381-221ddec3-26b4-46ba-b3d4-df48913f3031.png)
@@ -146,7 +146,8 @@ Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis 
 ### 4.1. Notebook Python
 Dans cette dernière partie, on utilise le notebook Python comme référence afin de finaliser notre réseau LeNet5.
 En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couche afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
-En effet, on ne désire pas créer la fonction d'entrainement du réseau de neurones en Cuda, car cela est beaucoup plus complexe, et nous aurait pris trop de temps à mettre en place. (*Descente de gradient, BackPropagation...*)
+
+En effet, dans ce projet, on ne désire pas créer la fonction d'entrainement du réseau de neurones en Cuda, car cela est beaucoup plus complexe, et nous aurait pris trop de temps à mettre en place (*Descente de gradient, BackPropagation...*). Ceci pourrait donc être un bon point de départ pour continuer ce projet, créer l'optimizer, la fonction de loss, et enfin l'entrainement sur une base de test et de validation.
 
 ### 4.2. Création des fonctions manquantes
 On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
