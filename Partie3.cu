@@ -9,11 +9,11 @@
 //Création d'une matrice (p lignes, n colonnes)
 void MatrixInit(float *M, int n, int p, int d, int type){
 
-    //Si on veut initialiser qu'avec des 0, type == 0 
+    // Si on veut initialiser qu'avec des 0, type == 0 
     // Pour avoir un kernel comme suit, type == 1: 
-    // 0, 0, 0
-    // 0, 1, 0
-    // 0, 0, 0
+    // 0 0 0
+    // 0 1 0
+    // 0 0 0
     // Pour avoir une initisalisation aléatoire entre 0 et 1, type == 2
     
     float random_value;
@@ -131,9 +131,49 @@ __global__ void cudaTanh(float* M, int nThreads){
 }
 
 
-__global__ void cudaDense(float* M, float* Mout, float* W){
+// Layer 4 - Dense | Linear
+
+
+//Multiplication d'une matrice NxP avec une PxM sur GPU
+__device__ float* cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n, int p, int m){
+    printf("Multiplication from the GPU...\n\n");
     
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
     
+    float s = 0.0f;
+    
+    if (lig < n && col < m){
+        for (int i = 0; i < p; i++){
+            s += M1[lig * p + i] * M2[i * m + col];
+        }
+        Mout[lig * m + col] = s;
+    }
+    
+    return Mout;
+}
+
+
+//Addition de deux matrices sur GPU
+__device__ float* cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
+    
+    printf("Addition from the GPU...\n\n");
+    
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    if (lig < n && col < p){
+        Mout[lig * p + col] = M1[lig * p + col] + M2[lig * p + col];
+    }
+    
+    return Mout;
+}
+
+
+__global__ void cudaDense(float* d_M, float* d_Mout, float* d_W, float* d_b, int n, int p, int m){
+    
+    d_Mout = cudaMatrixMultGeneral(d_M, d_W, d_Mout, n, p, m);
+    d_Mout = cudaMatrixAdd(d_Mout, d_b, d_Mout, n, p);
     
 }
 
