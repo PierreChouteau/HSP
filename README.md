@@ -55,7 +55,9 @@ https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architec
 
 
 ## 2- Partie 1. Prise en main de Cuda : Addition et Multiplication de matrices
-
+Dans tout le projet, que ce soit sur CPU ou GPU, on souhaite représenter les matrices sous forme de listes constituées des lignes de la matrice.
+Dans la fonction _MatrixInit_, on initialise la matrice **N*P** avec des valeurs aléatoires.
+![image](https://user-images.githubusercontent.com/94063629/148686250-47847bdf-57f5-4ddb-8987-2d112931d549.png)
 
 ## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
 L'architecture du réseau LeNet-5 est composé de plusieurs couches :
