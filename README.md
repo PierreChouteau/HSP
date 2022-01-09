@@ -147,7 +147,10 @@ Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis 
 Dans cette dernière partie, on utilise le notebook Python comme référence afin de finaliser notre réseau LeNet5.
 En particulier, celui-ci nous servira, grâce à un entraînement rapide, d'obtenir les valeurs optimales des poids de chaque couche afin de pouvoir initialiser les _kernels_ de convolution et les poids des couches _fully connected_ de façon à obtenir les meilleurs résultats.
 
-En effet, dans ce projet, on ne désire pas créer la fonction d'entrainement du réseau de neurones en Cuda, car cela est beaucoup plus complexe, et nous aurait pris trop de temps à mettre en place (*Descente de gradient, BackPropagation...*). Ceci pourrait donc être un bon point de départ pour continuer ce projet, créer l'optimizer, la fonction de loss, et enfin l'entrainement sur une base de test et de validation.
+En effet, dans ce projet, on ne désire pas créer la fonction d'entrainement du réseau de neurones en Cuda, car cela est beaucoup plus complexe, et nous aurait pris trop de temps à mettre en place (*Descente de gradient, BackPropagation...*). Ceci pourrait donc être un bon point de départ pour continuer ce projet :
+* Créer l'optimizer
+* La fonction de loss
+* L'entrainement sur une base de test et de validation.
 
 ### 4.2. Création des fonctions manquantes
 On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
