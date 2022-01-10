@@ -136,7 +136,7 @@ La convolution se fait exclusivement sur le GPU. De façon analogue à la multip
 
 ### 3.3. Layer 3 - Sous-échantillonnage
 Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
-![image](https://user-images.githubusercontent.com/94063629/148700559-b2a5e8f8-9c98-4717-8b42-48f23100e9c8.png)
+![image](https://user-images.githubusercontent.com/94063629/148841381-37243479-3f74-4a92-afff-a094cc323501.png)
 Celui-ci se fait également sur le GPU depuis un appel du CPU.
 
 ### 3.4. Tests
