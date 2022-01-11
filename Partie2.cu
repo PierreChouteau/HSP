@@ -33,7 +33,9 @@ void MatrixInit(float *M, int n, int p, int d, int type){
         for (int i = 0; i < n * p * d; i++){
             M[i] =  0;
         }
-        M[4] = 1;
+        for (int k = 0; k < d; k++){
+            M[k * (n * p) + 12] = 1;
+        }
     }
     else{
         //Valeurs entre 0 et 1
@@ -73,20 +75,27 @@ __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, in
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float s = 0.0;
+    float s;
 
     if (lig < Mout_ligne && col < Mout_colonne){
-        int tot = M_ligne * M_colonne;
-
-        for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
-            for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
-                for (int n_k = 0; n_k < nb_kernel; n_k++){
-                    s += M[(lig + kernel_lig) * M_colonne + col + kernel_col + n_k * tot] * kernel[kernel_lig * kernel_size + kernel_col + n_k * nb_kernel];
+        
+        int tot_M = M_ligne * M_colonne;
+        int tot_kernel = kernel_size * kernel_size;
+        int tot_Mout = Mout_ligne * Mout_colonne;
+        
+        for (int n_k = 0; n_k < nb_kernel; n_k++){
+            s = 0.0;
             
+            for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
+                for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
+                    
+                    s += M[(lig + kernel_lig) * M_colonne + (col + kernel_col) + n_k * tot_M] * kernel[kernel_lig * kernel_size + kernel_col + n_k * tot_kernel];
+                    
                 }
             }
+            
+            Mout[lig * Mout_colonne + col + n_k * tot_Mout] = s;
         }
-        Mout[lig * Mout_colonne + col] = s;
     }
 }
 
@@ -221,7 +230,7 @@ int main(){
     cudaDeviceSynchronize();
     
     // Affichage de la matrice résultat
-    MatrixPrint2D(S1_data, 14, 14);
+    MatrixPrint2D(C1_data, 28, 28);
     
     cudaFree(d_raw_data);
     cudaFree(d_C1_kernel);

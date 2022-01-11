@@ -19,7 +19,6 @@ Description : Initialiser n'importe quelle matrice de taille NxP selon diférent
                                     0 0 0
 
     * Pour avoir une initisalisation aléatoire entre 0 et 1: type == 2
-
 */
 void MatrixInit(float *M, int n, int p, int d, int type){
     
