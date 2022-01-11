@@ -94,7 +94,8 @@ Paramètres :
     Mout_colonne : nombre de colonnes de la matrice de sortie Mout
     Mout : pointeur de la matrice Mout
 
-NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de la matrice de sortie est : Mout_ligne = (M_ligne - kernel_size) + 1 
+NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de 
+la matrice de sortie est : Mout_ligne = (M_ligne - kernel_size) + 1 
 */
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
@@ -145,7 +146,8 @@ Paramètres :
     Mout_colonne : nombre de colonnes de la matrice de sortie Mout
     Mout : pointeur de la matrice Mout
 
-NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de la matrice de sortie est : Mout_ligne = M_ligne / meanpool_size
+NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de 
+la matrice de sortie est : Mout_ligne = M_ligne / meanpool_size
 */
 __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int M_prof, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
