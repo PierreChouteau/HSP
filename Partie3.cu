@@ -1,20 +1,27 @@
-//Pierre Chouteau & Elisa Delhommé
+// Pierre Chouteau & Elisa Delhommé
+
 #include <stdio.h>
 #include <stdlib.h>
 
 
 
-//Layer 1 - Génération des données de test (10 décembre 2021)
+// Layer 1 - Génération des données de test (10 décembre 2021)
 
-//Création d'une matrice (p lignes, n colonnes)
+/*
+*** Function Name : MatrixInit ***
+
+Description : Initialiser n'importe quelle matrice de taille NxP selon diférent cas :
+
+    * Si on veut initialiser qu'avec des 0  ==> type == 0 
+    
+                                    0 0 0
+    * Pour avoir un kernel comme :  0 1 0   ==> type == 1
+                                    0 0 0
+
+    * Pour avoir une initisalisation aléatoire entre 0 et 1: type == 2
+
+*/
 void MatrixInit(float *M, int n, int p, int d, int type){
-
-    // Si on veut initialiser qu'avec des 0, type == 0 
-    // Pour avoir un kernel comme suit, type == 1: 
-    // 0 0 0
-    // 0 1 0
-    // 0 0 0
-    // Pour avoir une initisalisation aléatoire entre 0 et 1, type == 2
     
     float random_value;
     
@@ -39,7 +46,15 @@ void MatrixInit(float *M, int n, int p, int d, int type){
 }
 
 
-//Affichage d'une matrice
+/*
+*** Function Name : MatrixPrint ***
+
+Description : Sert à afficher n'importe quelle matrice NxP dans une forme plus conventionnelle. 
+
+                                                              0 0 0
+ex : M = [0 0 0; 0 0 0; 0 0 0] sera affichée comme suit : M = 0 0 0   
+                                                              0 0 0 
+*/
 void MatrixPrint2D(float *M, int n, int p){
         
     for (int lig = 0; lig < p; lig++){
@@ -51,11 +66,11 @@ void MatrixPrint2D(float *M, int n, int p){
 }
 
 
-//Layer 2 - Convolution 2D
+// Layer 2 - Convolution 2D
 
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
-    //Convolution d'une matrice par un kernel
+    // Convolution d'une matrice par un kernel
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -81,7 +96,7 @@ __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, in
 
 __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
-    //MeanPool d'une matrice par un kernel 2x2
+    // MeanPool d'une matrice par un kernel 2x2
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -131,11 +146,17 @@ __global__ void cudaTanh(float* M, int nThreads){
 }
 
 
+
 // Layer 4 - Dense | Linear
 
+/*
+*** Function Name : cudaMatrixMultGeneral ***
 
-//Multiplication d'une matrice NxP avec une PxM sur GPU
+Description : Sert à effectuer la multiplication matricielle (dot) d'une matrice NxP avec une matrice PxM sur le GPU
+
+*/
 __device__ float* cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n, int p, int m){
+    
     printf("Multiplication from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
@@ -154,7 +175,12 @@ __device__ float* cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n
 }
 
 
-//Addition de deux matrices sur GPU
+/*
+*** Function Name : MatrixAdd ***
+
+Description : Sert à effectuer la multiplication matricielle (dot) de deux matrices carrées NxN sur GPU
+
+*/
 __device__ float* cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
     
     printf("Addition from the GPU...\n\n");
@@ -177,64 +203,65 @@ __global__ void cudaDense(float* d_M, float* d_Mout, float* d_W, float* d_b, int
     
 }
 
-//Fonction main
+// Fonction main
 int main(){
     
-    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU CPU \\\\\\\\\\\\\\\
+    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU CPU \\\\\\\\\\\\\\\    
+    //**********************************************************************
     
+    // INITIALISATION DES MATRICES pour le CPU \\
     
-    /////////////// INITIALISATION DES MATRICES \\\\\\\\\\\\\\\
-    //Création de l'image d'entrée à convoluer
+    // Création de l'image d'entrée à convoluer
     float *raw_data;    
     raw_data = (float*)malloc(32 * 32 * 1 * sizeof(float));
     
     MatrixInit(raw_data, 32, 32, 1, 2);
     
-    //Création de la sortie de la conv2D
+    // Création de la sortie de la conv2D
     float *C1_data;    
     C1_data = (float*)malloc(28 * 28 * 6 * sizeof(float));
     
     MatrixInit(C1_data, 28, 28, 6, 0);
     
-    //Création de la sortie du sous-échantillonnage
+    // Création de la sortie du sous-échantillonnage
     float *S1_data;    
     S1_data = (float*)malloc(14 * 14 * 6 * sizeof(float));
     
     MatrixInit(S1_data, 14, 14, 6, 0);
     
-    //Création de la sortie de la conv2D
+    // Création de la sortie de la conv2D
     float *C2_data;    
     C2_data = (float*)malloc(10 * 10 * 6 * sizeof(float));
     
     MatrixInit(C2_data, 10, 10, 6, 0);
     
-    //Création de la sortie du sous-échantillonnage
+    // Création de la sortie du sous-échantillonnage
     float *S2_data;    
     S2_data = (float*)malloc(5 * 5 * 6 * sizeof(float));
     
     MatrixInit(S1_data, 5, 5, 6, 0);
     
-    //Création des premiers noyaux de convolution
+    // Création des premiers noyaux de convolution
     float *C1_kernel;    
     C1_kernel = (float*)malloc(5 * 5 * 6 * sizeof(float));
     
     MatrixInit(C1_kernel, 5, 5, 6, 1);
 
     
+    // INITIALISATION DES MATRICES pour le GPU \\
     
-    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU GPU \\\\\\\\\\\\\\\
-    
-    //Test de cudaMatrixAdd
+    // Définition des matrices cuda
     float *d_raw_data, *d_C1_data, *d_C1_kernel, *d_S1_data, *d_C2_data, *d_S2_data;
     
-    //Allocation des mémoires des matrices pour cuda
+    // Allocation des mémoires des matrices pour cuda
     cudaMalloc((void**)&d_raw_data, sizeof(float) * 32 * 32 * 1);
     cudaMalloc((void**)&d_C1_kernel, sizeof(float) * 5 * 5 * 6);
     cudaMalloc((void**)&d_C1_data, sizeof(float) * 28 * 28 * 6);
     cudaMalloc((void**)&d_S1_data, sizeof(float) * 14 * 14 * 6);
     cudaMalloc((void**)&d_C2_data, sizeof(float) * 10 * 10 * 6);
     cudaMalloc((void**)&d_S2_data, sizeof(float) * 5 * 5 * 6);
-
+    
+    // Copie des valeurs des matrices initialisées sur le CPU dans leur homonyme GPU
     cudaMemcpy(d_raw_data, raw_data, sizeof(float) * 32 * 32 * 1, cudaMemcpyHostToDevice);
     cudaMemcpy(d_C1_kernel, C1_kernel, sizeof(float) * 5 * 5 * 6, cudaMemcpyHostToDevice);
     cudaMemcpy(d_C1_data, C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyHostToDevice);
@@ -242,7 +269,12 @@ int main(){
     cudaMemcpy(d_C2_data, C2_data, sizeof(float) * 10 * 10 * 16, cudaMemcpyHostToDevice);
     cudaMemcpy(d_S2_data, S2_data, sizeof(float) * 5 * 5 * 16, cudaMemcpyHostToDevice);
   
-    //Process sur GPU
+    
+    
+    /////////////// TOUT CE QUI SE PASSE ICI EST FAIT DU CPU \\\\\\\\\\\\\\\
+    //**********************************************************************
+    
+    // Process sur GPU
     dim3 block_size(32, 32);
     dim3 grid_size(1,1);
     
@@ -266,13 +298,14 @@ int main(){
     
     
     
-    //Copie des résultats sur CPU
+    // Copie des résultats sur CPU
     cudaMemcpy(C1_data, d_C1_data, sizeof(float) * 28 * 28 * 6, cudaMemcpyDeviceToHost);
     cudaMemcpy(S1_data, d_S1_data, sizeof(float) * 14 * 14 * 6, cudaMemcpyDeviceToHost);
     cudaMemcpy(C2_data, d_C2_data, sizeof(float) * 10 * 10 * 6, cudaMemcpyDeviceToHost);
     cudaMemcpy(S2_data, d_S2_data, sizeof(float) * 5 * 5 * 6, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
+    // Affichage de la matrice résultat
     MatrixPrint2D(S2_data, 5, 5);
     
     cudaFree(d_raw_data);
