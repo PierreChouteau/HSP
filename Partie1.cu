@@ -147,7 +147,6 @@ On peut considérer les dimensions des matrices comme les paramètres gridDim et
     les colonnes correspondent aux threads
 */
 __global__ void cudaMatrixMult(float *M1, float *M2, float *Mout, int n){
-    printf("Multiplication from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -181,7 +180,6 @@ On peut considérer les dimensions de la matrice de sortie comme les paramètres
     les colonnes correspondent aux threads : m
 */
 __global__ void cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n, int p, int m){
-    printf("Multiplication from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;

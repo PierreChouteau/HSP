@@ -69,60 +69,67 @@ void MatrixPrint2D(float *M, int n, int p){
 
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
-    // Convolution d'une matrice par un kernel
+    //Convolution d'une matrice par un kernel
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float s = 0.0;
+    float s;
 
     if (lig < Mout_ligne && col < Mout_colonne){
-        int tot = M_ligne * M_colonne;
-
-        for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
-            for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
-                for (int n_k = 0; n_k < nb_kernel; n_k++){
-                    s += M[(lig + kernel_lig) * M_colonne + col + kernel_col + n_k * tot] * kernel[kernel_lig * kernel_size + kernel_col + n_k * nb_kernel];
+        
+        int tot_kernel = kernel_size * kernel_size;
+        int tot_Mout = Mout_ligne * Mout_colonne;
+        
+        for (int n_k = 0; n_k < nb_kernel; n_k++){
+            s = 0.0;
             
+            for (int kernel_lig = 0; kernel_lig < kernel_size; kernel_lig++) {
+                for (int kernel_col = 0; kernel_col < kernel_size; kernel_col++) {
+                    
+                    s += M[(lig + kernel_lig) * M_colonne + (col + kernel_col)] * kernel[kernel_lig * kernel_size + kernel_col + n_k * tot_kernel];
+                    
                 }
             }
+            
+            Mout[lig * Mout_colonne + col + n_k * tot_Mout] = s;
         }
-        Mout[lig * Mout_colonne + col] = s;
     }
 }
 
 
 // Layer 3 - Sous-échantillonnage 
 
-__global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int profondeur, int meanpool_size, int Mout_ligne, int Mout_colonne){
+__global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int M_prof, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
     // MeanPool d'une matrice par un kernel 2x2
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    float s = 0.0;
-    int tot_meanpool = meanpool_size * meanpool_size;
-
     if (lig % meanpool_size == 0 && col % meanpool_size == 0){
-        int tot = M_ligne * M_colonne;
-
-        for (int meanpool_lig = 0; meanpool_lig < meanpool_size; meanpool_lig++) {
-            for (int meanpool_col = 0; meanpool_col < meanpool_size; meanpool_col++) {
-                for (int n_prof = 0; n_prof < profondeur; n_prof++){
-                    s += M[(lig + meanpool_lig) * M_colonne + col + meanpool_col + n_prof * tot] / tot_meanpool;
+        
+        float s;
+        int tot_meanpool = meanpool_size * meanpool_size;
+        int tot_M = M_ligne * M_colonne;
+        int tot_Mout = Mout_ligne * Mout_colonne;
+        
+        for (int n_prof = 0; n_prof < M_prof; n_prof++){
+            s = 0.0;
+            
+            for (int meanpool_lig = 0; meanpool_lig < meanpool_size; meanpool_lig++) {
+                for (int meanpool_col = 0; meanpool_col < meanpool_size; meanpool_col++) {
+                    s += M[(lig + meanpool_lig) * M_colonne + col + meanpool_col + n_prof * tot_M] / tot_meanpool;
             
                 }
             }
-        }
-        if (lig == 0){
-            Mout[lig * Mout_colonne + (col / meanpool_size)] = s;
-    
-        }
-        else if (col == 0){
-            Mout[(lig / meanpool_size) * Mout_colonne + col] = s;
-    
-        }
-        else{
-            Mout[(lig / meanpool_size) * Mout_colonne + (col / meanpool_size)] = s;
+            if (lig == 0){
+                Mout[lig * Mout_colonne + (col / meanpool_size) + n_prof * tot_Mout] = s;
+            }
+            else if (col == 0){
+                Mout[(lig / meanpool_size) * Mout_colonne + col + n_prof * tot_Mout] = s;
+            }
+            else{
+                Mout[(lig / meanpool_size) * Mout_colonne + (col / meanpool_size) + n_prof * tot_Mout] = s;
+            }
         }
     }
 }
@@ -130,18 +137,27 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
 
 // Fonction d'activation - Tanh 
 
-__device__ float* activation_tanh(float* M, int nThreads){
+__device__ float* activation_tanh(float* M, int M_ligne, int M_colonne, int M_prof){
     
-    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < nThreads; i+= blockDim.x * gridDim.x){
-        M[i] = tanh(M[i]);
+    int lig = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    
+    if (lig < M_ligne && col < M_colonne){
+        
+        int tot_M = M_ligne * M_colonne;
+        
+        for (int n_prof = 0; n_prof < M_prof; n_prof++){
+            M[lig * M_colonne + col + n_prof * tot_M] = tanh(M[lig * M_colonne + col + n_prof * tot_M]);
+        }
+            
     }
-    
+            
     return M;
 }
 
 
-__global__ void cudaTanh(float* M, int nThreads){
-    activation_tanh(M, nThreads);
+__global__ void cudaTanh(float* M, int M_ligne, int M_colonne, int M_prof){
+    activation_tanh(M, M_ligne, M_colonne, M_prof);
 }
 
 
@@ -280,7 +296,7 @@ int main(){
     cudaConv2D<<<grid_size,block_size>>>(d_raw_data, d_C1_kernel, d_C1_data, 32, 32, 5, 6, 28, 28);
     cudaDeviceSynchronize();
     
-    cudaTanh<<<grid_size, block_size>>>(d_C1_data, 28*28);
+    cudaTanh<<<grid_size, block_size>>>(d_C1_data, 28, 28, 6);
     cudaDeviceSynchronize();
     
     cudaMeanPool<<<grid_size, block_size>>>(d_C1_data, d_S1_data, 28, 28, 6, 2, 14, 14);
@@ -289,12 +305,11 @@ int main(){
     cudaConv2D<<<grid_size,block_size>>>(d_S1_data, d_C1_kernel, d_C2_data, 14, 14, 5, 16, 10, 10);
     cudaDeviceSynchronize();
     
-    cudaTanh<<<grid_size, block_size>>>(d_C2_data, 10*10);
+    cudaTanh<<<grid_size, block_size>>>(d_C2_data, 10, 10, 16);
     cudaDeviceSynchronize();
     
     cudaMeanPool<<<grid_size, block_size>>>(d_C2_data, d_S2_data, 10, 10, 16, 2, 5, 5);
     cudaDeviceSynchronize();
-    
     
     
     // Copie des résultats sur CPU
