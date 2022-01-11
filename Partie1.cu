@@ -105,7 +105,7 @@ __global__ void cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
 }
 
 /*
-*** Function Name : MatrixMult***
+*** Function Name : MatrixMult ***
 
 Sert à effectuer la multiplication matricielle (dot) de deux matrices carrées NxN sur CPU
 

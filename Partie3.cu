@@ -10,7 +10,7 @@
 /*
 *** Function Name : MatrixInit ***
 
-Description : Initialiser n'importe quelle matrice de taille NxP selon diférent cas :
+Sert à initialiser n'importe quelle matrice de taille NxP selon diférentes possibilités:
 
     * Si on veut initialiser qu'avec des 0  ==> type == 0 
     
@@ -19,6 +19,13 @@ Description : Initialiser n'importe quelle matrice de taille NxP selon diférent
                                     0 0 0
 
     * Pour avoir une initisalisation aléatoire entre 0 et 1: type == 2
+    
+Paramètres : 
+    n : nombre de lignes de la matrice,
+    p : nombre de colonnes de la matrice si n différent de p,
+    d : nombre de kernel de la matrice (profondeur)
+    M : pointeur de la matrice
+    type : permet de choisir l'initialisation souhaité
 */
 void MatrixInit(float *M, int n, int p, int d, int type){
     
@@ -48,11 +55,15 @@ void MatrixInit(float *M, int n, int p, int d, int type){
 /*
 *** Function Name : MatrixPrint ***
 
-Description : Sert à afficher n'importe quelle matrice NxP dans une forme plus conventionnelle. 
+Sert à afficher n'importe quelle matrice NxP dans une forme plus conventionnelle. 
 
                                                               0 0 0
 ex : M = [0 0 0; 0 0 0; 0 0 0] sera affichée comme suit : M = 0 0 0   
                                                               0 0 0 
+Paramètres : 
+    n : nombre de lignes de la matrice,
+    p : nombre de colonnes de la matrice si n différent de p,
+    M : pointeur de la matrice
 */
 void MatrixPrint2D(float *M, int n, int p){
         
@@ -67,9 +78,26 @@ void MatrixPrint2D(float *M, int n, int p){
 
 // Layer 2 - Convolution 2D
 
+/*
+*** Function Name : cudaConv2D ***
+
+Sert à effectuer la convolution de la matrice M avec 6 noyaux de convolution de taille 5x5.
+
+Paramètres : 
+    M_ligne : nombre de lignes de la matrice M
+    M_colonne : nombre de colonnes de la matrice M
+    M : pointeur de la matrice
+    kernel_size : nombre de ligne et de colonne du kernel, noyau de convolution
+    nb_kernel : nombre de kernel, noyau de convolution 
+    kernel : pointeur de la matrice correspondant au kernel 
+    Mout_ligne : nombre de lignes de la matrice de sortie Mout
+    Mout_colonne : nombre de colonnes de la matrice de sortie Mout
+    Mout : pointeur de la matrice Mout
+
+NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de la matrice de sortie est : Mout_ligne = (M_ligne - kernel_size) + 1 
+*/
 __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, int M_colonne, int kernel_size, int nb_kernel, int Mout_ligne, int Mout_colonne){
     
-    //Convolution d'une matrice par un kernel
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -99,9 +127,28 @@ __global__ void cudaConv2D(float* M, float* kernel, float* Mout, int M_ligne, in
 
 // Layer 3 - Sous-échantillonnage 
 
+/*
+*** Function Name : cudaMeanPool ***
+
+Sert à effectuer le MeanPool de la Matrice d'entrée M par un kernel 2x2. 
+
+ex : 1 2    ==>  2.5 = (1 + 2 + 3 + 4) / 4 = 2.5
+     3 4 
+
+Paramètres : 
+    M_ligne : nombre de lignes de la matrice M
+    M_colonne : nombre de colonnes de la matrice M
+    M_prof : profondeur de la matrice M
+    M : pointeur de la matrice
+    meanpool_size : nombre de ligne et de colonne du kernel, noyau de convolution
+    Mout_ligne : nombre de lignes de la matrice de sortie Mout
+    Mout_colonne : nombre de colonnes de la matrice de sortie Mout
+    Mout : pointeur de la matrice Mout
+
+NB : La relation entre le nombre de lignes (respectivement de colonnes) de la matrice d'entrée et le nombre de lignes (respectivement de colonnes) de la matrice de sortie est : Mout_ligne = M_ligne / meanpool_size
+*/
 __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, int M_prof, int meanpool_size, int Mout_ligne, int Mout_colonne){
     
-    // MeanPool d'une matrice par un kernel 2x2
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -135,8 +182,20 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
 }
 
 
-// Fonction d'activation - Tanh 
+/*
+*** Function Name : activation_tanh ***
 
+Sert à appliquer la fonction tanh à la matrice M sur le GPU. 
+
+ATTENTION : Cette fonction est défini en __device__, elle doit donc être appelé du GPU par une fonction __global__.
+Elle est exécuté sur le GPU.
+
+Paramètres : 
+    M_ligne : nombre de lignes de la matrice M
+    M_colonne : nombre de colonnes de la matrice M
+    M_prof : profondeur de la matrice M
+    M : pointeur de la matrice
+*/
 __device__ float* activation_tanh(float* M, int M_ligne, int M_colonne, int M_prof){
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
@@ -156,6 +215,17 @@ __device__ float* activation_tanh(float* M, int M_ligne, int M_colonne, int M_pr
 }
 
 
+/*
+*** Function Name : cudaTanh ***
+
+Sert simplement à appeler la fonction activation_tanh défini juste avant.
+
+Paramètres : 
+    M_ligne : nombre de lignes de la matrice M
+    M_colonne : nombre de colonnes de la matrice M
+    M_prof : profondeur de la matrice M
+    M : pointeur de la matrice
+*/
 __global__ void cudaTanh(float* M, int M_ligne, int M_colonne, int M_prof){
     activation_tanh(M, M_ligne, M_colonne, M_prof);
 }
@@ -167,12 +237,21 @@ __global__ void cudaTanh(float* M, int M_ligne, int M_colonne, int M_prof){
 /*
 *** Function Name : cudaMatrixMultGeneral ***
 
-Description : Sert à effectuer la multiplication matricielle (dot) d'une matrice NxP avec une matrice PxM sur le GPU
+Sert à effectuer la multiplication matricielle (dot) d'une matrice NxP avec une matrice PxM sur le GPU
 
+Paramètres : 
+    n : nombre de lignes de la matrice M1
+    p : nombre de colonnes de M1, de lignes de M2
+    m : nombre de colonnes de M2
+    M1 : pointeur de la matrice 1 de taille NxP,
+    M2 : pointeur de la matrice 2 de taille PxM,
+    Mout : pointeur vers la matrice résultante de la multiplication de taille NxM
+
+On peut considérer les dimensions de la matrice de sortie comme les paramètres gridDim et blockDim pour l'appel de la fonction:
+    les lignes correspondent aux blocks : n
+    les colonnes correspondent aux threads : m
 */
 __device__ float* cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n, int p, int m){
-    
-    printf("Multiplication from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -191,14 +270,22 @@ __device__ float* cudaMatrixMultGeneral(float *M1, float *M2, float *Mout, int n
 
 
 /*
-*** Function Name : MatrixAdd ***
+*** Function Name : cudaMatrixAdd ***
 
-Description : Sert à effectuer la multiplication matricielle (dot) de deux matrices carrées NxN sur GPU
+Sert à additionner deux matrices de même taille NxP sur le GPU 
 
+Paramètres : 
+    n : nombre de lignes des matrice,
+    p : nombre de colonnes des matrices si n différent de p,
+    M1 : pointeur de la matrice 1 de taille NxP,
+    M2 : pointeur de la matrice 2 de taille NxP,
+    Mout : pointeur vers la matrice résultante de l'addition de taille NxP,
+    
+On peut considérer les dimensions des matrices comme les paramètres gridDim et blockDim pour l'appel de la fonction:
+    les lignes correspondent aux blocks,
+    les colonnes correspondent aux threads
 */
 __device__ float* cudaMatrixAdd(float *M1, float *M2, float *Mout, int n, int p){
-    
-    printf("Addition from the GPU...\n\n");
     
     int lig = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
