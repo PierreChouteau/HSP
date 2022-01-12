@@ -14,11 +14,13 @@ Sert à initialiser n'importe quelle matrice de taille NxP selon diférentes pos
 
     * Si on veut initialiser qu'avec des 0  ==> type == 0 
     
+    * Si on veut initialiser qu'avec des 1  ==> type == 1 
+    
                                     0 0 0
-    * Pour avoir un kernel comme :  0 1 0   ==> type == 1
+    * Pour avoir un kernel comme :  0 2 0   ==> type == 2
                                     0 0 0
 
-    * Pour avoir une initisalisation aléatoire entre 0 et 1: type == 2
+    * Pour avoir une initisalisation aléatoire entre 0 et 1: type == 3
     
 Paramètres : 
     n : nombre de lignes de la matrice,
@@ -36,12 +38,17 @@ void MatrixInit(float *M, int n, int p, int d, int type){
             M[i] =  0;
         }
     }
-    else if (type == 1){
+    if (type == 1){
+        for (int i = 0; i < n * p * d; i++){
+            M[i] =  1;
+        }
+    }
+    else if (type == 2){
         for (int i = 0; i < n * p * d; i++){
             M[i] =  0;
         }
         for (int k = 0; k < d; k++){
-            M[k * (n * p) + 12] = 1;
+            M[k * (n * p) + 12] = 2;
         }
     }
     else{
@@ -68,13 +75,15 @@ Paramètres :
     M : pointeur de la matrice
 */
 void MatrixPrint2D(float *M, int n, int p){
-        
+    
+    printf("\n");
     for (int lig = 0; lig < p; lig++){
         for(int col = lig * n; col < n * (lig+1); col++){
             printf("%1.1f ", M[col]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 
@@ -248,7 +257,7 @@ int main(){
     float *raw_data;    
     raw_data = (float*)malloc(32 * 32 * 1 * sizeof(float));
     
-    MatrixInit(raw_data, 32, 32, 1, 2);
+    MatrixInit(raw_data, 32, 32, 1, 1);
     
     // Création de la sortie de la conv2D
     float *C1_data;    
@@ -267,7 +276,7 @@ int main(){
     float *C1_kernel;    
     C1_kernel = (float*)malloc(5 * 5 * 6 * sizeof(float));
     
-    MatrixInit(C1_kernel, 5, 5, 6, 1);
+    MatrixInit(C1_kernel, 5, 5, 6, 2);
 
     
     // INITIALISATION DES MATRICES pour le GPU \\
@@ -311,6 +320,13 @@ int main(){
     cudaDeviceSynchronize();
     
     // Affichage de la matrice résultat
+    printf("\nMatrice de base raw_data:");
+    MatrixPrint2D(raw_data, 32, 32);
+    printf("Noyau de convolution C1_kernel:");
+    MatrixPrint2D(C1_kernel, 5, 5);
+    printf("Matrice résultante de la convolution et de la fonction d'activation:");
+    MatrixPrint2D(C1_data, 28, 28);
+    printf("Matrice résultante de la Convolution sur GPU:");
     MatrixPrint2D(S1_data, 14, 14);
     
     cudaFree(d_raw_data);

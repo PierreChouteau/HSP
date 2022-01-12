@@ -47,10 +47,11 @@ void MatrixPrint(float *M, int n, int p){
         
     for (int lig = 0 ; lig < n; lig++){
         for(int col = lig * p; col < p * (lig+1); col++){
-            printf("%f ", M[col]);
+            printf("%1.1f ", M[col]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 
@@ -204,7 +205,7 @@ int main(){
     float *M;
     
     int n = 3;
-    int p = 2;
+    int p = 3;
     int m = 3;
     
     // Allocation de la mémoire pour la création de la matrice
@@ -230,15 +231,24 @@ int main(){
     MatrixInit(M2, p, m);
     
     // Test de MatrixAdd et MatrixMult sur CPU
-//    MatrixAdd(M1, M2, Mout, n, p);
-//    MatrixMult(M1, M2, Mout, n);
+    MatrixAdd(M1, M2, Mout, n, p);
     
-//     printf("Matrice 1\n");
-//     MatrixPrint(M1, n, p);
-//     printf("\nMatrice 2\n");
-//     MatrixPrint(M2, n, p);
-//     printf("\nMatrice résultante de la mutliplication:\n");
-//     MatrixPrint(Mout, n, p);
+    printf("\nMatrice 1\n");
+    MatrixPrint(M1, n, p);
+    printf("Matrice 2\n");
+    MatrixPrint(M2, n, p);
+    printf("Matrice résultante de l'addition sur CPU:\n");
+    MatrixPrint(Mout, n, p);
+    
+    
+    MatrixMult(M1, M2, Mout, n);
+    
+    printf("\nMatrice 1\n");
+    MatrixPrint(M1, n, p);
+    printf("Matrice 2\n");
+    MatrixPrint(M2, n, p);
+    printf("Matrice résultante de la mutliplication sur CPU:\n");
+    MatrixPrint(Mout, n, p);
 
     
     
@@ -261,23 +271,35 @@ int main(){
     dim3 grid_size(1, 1);
     
     // Addition sur GPU
-//    cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
+    cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
+    cudaDeviceSynchronize();
+    
+    // Copie du résultat sur CPU
+    cudaMemcpy(Mout, d_Mout, sizeof(float) * n * m, cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    
+    printf("\nMatrice 1\n");
+    MatrixPrint(M1, n, p);
+    printf("Matrice 2\n");
+    MatrixPrint(M2, p, m);
+    printf("Matrice résultante de l'addition sur GPU:\n");
+    MatrixPrint(Mout, n, m);
+    
     
     // Multiplication sur GPU    
     cudaMatrixMultGeneral<<<grid_size,block_size>>>(d_M1, d_M2, d_Mout, n, p, m);
     cudaDeviceSynchronize();
-    
     
     // Copie du résultat sur CPU
     cudaMemcpy(Mout, d_Mout, sizeof(float) * n * m, cudaMemcpyDeviceToHost);
     cudaDeviceSynchronize();
     
     // Affichage du résultat de la multiplication
-    printf("Matrice 1\n");
+    printf("\nMatrice 1\n");
     MatrixPrint(M1, n, p);
-    printf("\nMatrice 2\n");
+    printf("Matrice 2\n");
     MatrixPrint(M2, p, m);
-    printf("\nMatrice résultante de la Multiplication:\n");
+    printf("Matrice résultante de la Multiplication sur GPU:\n");
     MatrixPrint(Mout, n, m);
     
     cudaFree(d_M1);
