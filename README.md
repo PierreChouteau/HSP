@@ -70,6 +70,9 @@ La création d'une fonction d’affichage de matrice sous sa forme classique, av
 Sur **CPU**, on additionne deux matrices simplement comme à notre habitude en sommant les coefficients de chacune deux à deux puisque la représentation sous forme de liste n'est pas un frein à cette addition classique.
 ![image](https://user-images.githubusercontent.com/94063629/148687251-c18e9d34-435b-428f-af89-cd3c93302b13.png)
 
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat addition CPU****
+
 #### **GPU**
 Sur **GPU**, le calcul se base également sur la somme des coefficients deux à deux mais est un peu plus complexe à mettre en oeuvre en raison de la parallélisation des calculs sur GPU.
 En particulier, la définition des indices des coefficients matriciels se fait cette fois via les variables _dim3_ définissant les threads afin de paralléliser (et donc accélérer) les calculs).
@@ -105,14 +108,22 @@ Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 ```
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat addition CPU****
 
 ### 2.4. Multiplication
 #### **CPU**
 La multiplication de deux matrices sur le CPU se fait de façon habituelle. La seule difficulté réside dans l'indexage correct des coefficients recherchés, les matrices étant sous forme de liste.
 ![image](https://user-images.githubusercontent.com/94063629/148688381-221ddec3-26b4-46ba-b3d4-df48913f3031.png)
 
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat multi CPU****
+
 #### **GPU**
 Comme pour l'addition, la multiplication sur GPU repose sur le même principe que la multiplication classique mais les indexes lignes et colonnes désirées doivent être définies (exactement selon la même formulation que pour l'addition) avec les variables définissant les threads et blocks.
+
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat multi GPU****
 
 ## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
 L'architecture du réseau LeNet-5 est composé de plusieurs couches :
@@ -133,16 +144,26 @@ La convolution se fait exclusivement sur le GPU. De façon analogue à la multip
 
 ![Peek 2022-01-10 00-30](https://user-images.githubusercontent.com/75682374/148705636-8c98babd-8159-4ac1-b08b-8abeef920215.gif)
 
+Il est également nécessaire de prendre un compte le nombre de kernel (la profondeur de **C1_kernel**) sur les calculs de convolution afin d'obtenir le nombre de _features maps_ souhaités.
+
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat conv****
 
 ### 3.3. Layer 3 - Sous-échantillonnage
-Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**.
+Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**).
 ![image](https://user-images.githubusercontent.com/94063629/148841381-37243479-3f74-4a92-afff-a094cc323501.png)
 Celui-ci se fait également sur le GPU depuis un appel du CPU.
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat meanpool****
 
 ### 3.4. Tests
 ### 3.5. Fonctions d'activation
 Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. Comme on peut le remarquer dans l'article sur l'architecture de LeNet-5, la fonction d'activation utilisée est une tangente hyperbolique (_tanh_). Celle-ci interviendra après chaque layer de _Conv2D_.
 Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction avec le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
+La couche de fonction d'activation retourne une matrice de même dimension que celle qui lui est fournie.
+
+Ci-dessous un exemple de réalisation:
+*****ajouter image résultat tanh****
 
 ## 4- Partie 3. Un peu de Python
 
