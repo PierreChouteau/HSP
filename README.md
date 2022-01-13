@@ -70,8 +70,8 @@ La création d'une fonction d’affichage de matrice sous sa forme classique, av
 Sur **CPU**, on additionne deux matrices simplement comme à notre habitude en sommant les coefficients de chacune deux à deux puisque la représentation sous forme de liste n'est pas un frein à cette addition classique.
 ![image](https://user-images.githubusercontent.com/94063629/148687251-c18e9d34-435b-428f-af89-cd3c93302b13.png)
 
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat addition CPU****
+Ci-dessous un exemple de réalisation sur une addition de matrices 3x3:
+![image](https://user-images.githubusercontent.com/94063629/149382058-443e7565-0896-4b1a-8a06-c49b4185ed1f.png)
 
 #### **GPU**
 Sur **GPU**, le calcul se base également sur la somme des coefficients deux à deux mais est un peu plus complexe à mettre en oeuvre en raison de la parallélisation des calculs sur GPU.
@@ -109,21 +109,21 @@ Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
 Ci-dessous un exemple de réalisation:
-*****ajouter image résultat addition CPU****
+![image](https://user-images.githubusercontent.com/94063629/149382120-fc89343c-9070-483d-a279-e6ec71d3646f.png)
 
 ### 2.4. Multiplication
 #### **CPU**
 La multiplication de deux matrices sur le CPU se fait de façon habituelle. La seule difficulté réside dans l'indexage correct des coefficients recherchés, les matrices étant sous forme de liste.
 ![image](https://user-images.githubusercontent.com/94063629/148688381-221ddec3-26b4-46ba-b3d4-df48913f3031.png)
 
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat multi CPU****
+Ci-dessous un exemple de réalisation sur une multiplication de matrices 3x3:
+![image](https://user-images.githubusercontent.com/94063629/149382363-1447e7d3-da39-42f4-8886-212a06a61db2.png)
 
 #### **GPU**
 Comme pour l'addition, la multiplication sur GPU repose sur le même principe que la multiplication classique mais les indexes lignes et colonnes désirées doivent être définies (exactement selon la même formulation que pour l'addition) avec les variables définissant les threads et blocks.
 
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat multi GPU****
+Ci-dessous un exemple de réalisation sur une multiplication de matrices 3x3:
+![image](https://user-images.githubusercontent.com/94063629/149382451-8b1d5a11-f984-4b3e-8e46-3f14cc048176.png)
 
 ## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
 L'architecture du réseau LeNet-5 est composé de plusieurs couches :
