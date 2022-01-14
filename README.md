@@ -109,6 +109,7 @@ Enfin, la fonction d'addition sur le GPU est appelée via la commande suivante:
 cudaMatrixAdd<<<grid_size, block_size>>>(d_M1, d_M2, d_Mout, n, p);
 ```
 Ci-dessous un exemple de réalisation:
+
 ![image](https://user-images.githubusercontent.com/94063629/149382120-fc89343c-9070-483d-a279-e6ec71d3646f.png)
 
 ### 2.4. Multiplication
@@ -151,15 +152,14 @@ Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un 
 ![image](https://user-images.githubusercontent.com/94063629/148841381-37243479-3f74-4a92-afff-a094cc323501.png)
 Celui-ci se fait également sur le GPU depuis un appel du CPU.
 
-### 3.4. Tests
-### 3.5. Fonctions d'activation
+### 3.4. Fonctions d'activation
 Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est requise. Comme on peut le remarquer dans l'article sur l'architecture de LeNet-5, la fonction d'activation utilisée est une tangente hyperbolique (_tanh_). Celle-ci interviendra après chaque layer de _Conv2D_.
 Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction avec le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 La couche de fonction d'activation retourne une matrice de même dimension que celle qui lui est fournie.
 
 ## 3.5 Exemple
 Vocii ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
-![image](https://user-images.githubusercontent.com/94063629/149505309-febcfbca-324d-4ea0-b55d-797e06604a86.png)
+![image](https://user-images.githubusercontent.com/94063629/149505445-78691e54-997d-4050-af17-7a51034525a7.png)
 
 ## 4- Partie 3. Un peu de Python
 
