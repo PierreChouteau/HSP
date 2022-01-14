@@ -34,10 +34,10 @@ Vous n'avez donc plus qu'à l'exécuter, et là encore, rien de plus simple. Lan
 PS: Pour que ces commandes fonctionnent il faut bien sûr que vous soyez dans votre dossier de travail. Vous pouvez vous déplacer facilement dans les dossiers grâce à la commande "cd".
 
 
-## 1- Objectif
-Les objectif de ce projet sont : 
+## 1- Objectifs
+Les objectifs de ce projet sont : 
 * Apprendre à utiliser CUDA
-* Etudier la complexité d'algorithmes et l'accélération obtenue sur GPU par rapport à une éxécution sur CPU
+* Etudier la complexité d'algorithmes et l'accélération obtenue sur GPU par rapport à une exécution sur CPU
 * Observer les limites de l'utilisation d'un GPU
 * Implémenter "from scratch" un CNN : juste la partie inférence et non l'entrainement
 * Exporter des données depuis un notebook python et les réimporter dans un projet cuda
@@ -127,13 +127,13 @@ Ci-dessous un exemple de réalisation sur une multiplication de matrices 3x3:
 ![image](https://user-images.githubusercontent.com/94063629/149382451-8b1d5a11-f984-4b3e-8e46-3f14cc048176.png)
 
 ## 3- Partie 2. Premières couches du réseau de neurones LeNet-5 : Convolution 2D et subsampling
-L'architecture du réseau LeNet-5 est composé de plusieurs couches :
+L'architecture du réseau LeNet-5 est composée de plusieurs couches :
 
 * Layer 1- Couche d'entrée de taille 32x32 correspondant à la taille des images de la base de données MNIST
 * Layer 2- Convolution avec 6 noyaux de convolution de taille 5x5. La taille résultante est donc de 6x28x28.
 * Layer 3- Sous-échantillonnage d'un facteur 2. La taille résultante des données est donc de 6x14x14.
 
-### 3.1. Layer 1 - Génération des données de test
+### 3.1. Layer 1 - Génération des données de tests
 La génération des données consiste en la création des matrices suivantes sous la forme de tableaux à une dimension:
 - la matrice d'entrée dans le réseau 32x32 **raw_data** initialisée avec des valeurs aléatoires entre 0 et 1.
 - la matrice 6x28x28 **C1_data** résultante de la convolution 2D initialisée avec des valeurs nulles.
@@ -158,7 +158,7 @@ Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis 
 La couche de fonction d'activation retourne une matrice de même dimension que celle qui lui est fournie.
 
 ## 3.5 Exemple
-Vocii ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
+Voci ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
 ![image](https://user-images.githubusercontent.com/94063629/149505445-78691e54-997d-4050-af17-7a51034525a7.png)
 Dans cet exemple, on choisit volontairement des matrices aux coefficients simples afin de pouvoir confirmer le bon déroulement des calculs: le kernel nul avec un 2 central permet notamment la vérification rapide des calculs sur une matrice unitaire.
 
@@ -179,8 +179,10 @@ Cette fonction fait intervenir les fonctions de multiplication et d'addition sur
 
 En outre, afin de prévoir les cas où les matrices **W** et **x** ne sont pas carrées, on se propose d'introduire une nouvelle fonction de multiplication (nommée _cudaMatrixMultGeneral_), basée sur le même principe que celle créée plus haut sur GPU, mais effectuant la multiplication d'une matrice **NxP** par une matrice **PxM** pour donner une matrice résultante **NxM** (celle-ci se trouve dans le fichier _Partie3.cu_).
 
-### 4.3. Importation du dataset MNIST et affichage des données en console
-### 4.4. Export des poids dans un fichier .h5
+### 4.3. Export des poids dans un fichier .h5
 Après avoir entraîné le réseau dans le notebook et récupéré les poids et biais de chaque couche, on les utilise pour initialiser les _kernels_. 
 
 Le réseau LeNet5 est désormais entièrement fonctionnel pour une image d'entrée de dimensions 32x32.
+
+
+Cette partie n'est pas encore complètement terminée. La création du réseau est faite, mais la liaison avec les poids pas encore. Il reste à finir cette partie à finir pour qu le réseau puisse être totalement fonctionnel. 
