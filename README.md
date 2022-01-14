@@ -160,6 +160,7 @@ La couche de fonction d'activation retourne une matrice de même dimension que c
 ## 3.5 Exemple
 Vocii ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
 ![image](https://user-images.githubusercontent.com/94063629/149505445-78691e54-997d-4050-af17-7a51034525a7.png)
+Dans cet exemple, on choisit volontairement des matrices aux coefficients simples afin de pouvoir confirmer le bon déroulement des calculs: le kernel nul avec un 2 central permet notamment la vérification rapide des calculs sur une matrice unitaire.
 
 ## 4- Partie 3. Un peu de Python
 
@@ -174,7 +175,7 @@ En effet, dans ce projet, on ne désire pas créer la fonction d'entrainement du
 
 ### 4.2. Création des fonctions manquantes
 On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
-Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU.
+Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU. En outre, afin de prévoir les cas où les matrices **W** et **x** ne sont pas carrées, on se propose d'introduire une nouvelle fonction de multiplication, basée sur le même principe que celle créée plus haut sur GPU, mais effectuant la multiplication d'une matrice **NxP** par une matrice **PxM** pour donner une matrice résultante **NxM** (celle-ci se trouve dans le fichier _Partie3.cu_.
 
 ### 4.3. Importation du dataset MNIST et affichage des données en console
 ### 4.4. Export des poids dans un fichier .h5
