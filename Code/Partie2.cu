@@ -200,8 +200,8 @@ __global__ void cudaMeanPool(float* M, float* Mout, int M_ligne, int M_colonne, 
 
 Sert à appliquer la fonction tanh à la matrice M sur le GPU. 
 
-ATTENTION : Cette fonction est défini en __device__, elle doit donc être appelé du GPU par une fonction __global__.
-Elle est exécuté sur le GPU.
+ATTENTION : Cette fonction est définie en __device__, elle doit donc être appelée du GPU par une fonction __global__.
+Elle est exécutée sur le GPU.
 
 Paramètres : 
     M_ligne : nombre de lignes de la matrice M
@@ -231,7 +231,7 @@ __device__ float* activation_tanh(float* M, int M_ligne, int M_colonne, int M_pr
 /*
 *** Function Name : cudaTanh ***
 
-Sert simplement à appeler la fonction activation_tanh défini juste avant.
+Sert simplement à appeler la fonction activation_tanh définie juste avant.
 
 Paramètres : 
     M_ligne : nombre de lignes de la matrice M
@@ -326,7 +326,7 @@ int main(){
     MatrixPrint2D(C1_kernel, 5, 5);
     printf("Matrice résultante de la convolution et de la fonction d'activation:");
     MatrixPrint2D(C1_data, 28, 28);
-    printf("Matrice résultante de la Convolution sur GPU:");
+    printf("Matrice résultante du MeanPooling:");
     MatrixPrint2D(S1_data, 14, 14);
     
     cudaFree(d_raw_data);
