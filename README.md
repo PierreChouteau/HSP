@@ -146,15 +146,10 @@ La convolution se fait exclusivement sur le GPU. De façon analogue à la multip
 
 Il est également nécessaire de prendre un compte le nombre de kernel (la profondeur de **C1_kernel**) sur les calculs de convolution afin d'obtenir le nombre de _features maps_ souhaités.
 
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat conv****
-
 ### 3.3. Layer 3 - Sous-échantillonnage
 Le sous-échantillonage se fait par une fonction de _MeanPooling_, à savoir un moyennage sur une fenêtre glissante 2x2 (afin de réduire par 2 les dimensions de **raw_data** et d'obtenir **S1_data**).
 ![image](https://user-images.githubusercontent.com/94063629/148841381-37243479-3f74-4a92-afff-a094cc323501.png)
 Celui-ci se fait également sur le GPU depuis un appel du CPU.
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat meanpool****
 
 ### 3.4. Tests
 ### 3.5. Fonctions d'activation
@@ -162,8 +157,9 @@ Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est 
 Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction avec le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 La couche de fonction d'activation retourne une matrice de même dimension que celle qui lui est fournie.
 
-Ci-dessous un exemple de réalisation:
-*****ajouter image résultat tanh****
+## 3.5 Exemple
+Vocii ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
+![image](https://user-images.githubusercontent.com/94063629/149505309-febcfbca-324d-4ea0-b55d-797e06604a86.png)
 
 ## 4- Partie 3. Un peu de Python
 
