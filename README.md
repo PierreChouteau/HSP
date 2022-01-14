@@ -157,7 +157,7 @@ Dans l'objectif de parfaire le réseau de neurones, une couche d'activation est 
 Afin de se laisser la possibilité d'appeler cette fonction d'activation depuis chaque kernel sur le GPU, on définit cette fois la fonction avec le _specifier_ ```__device__```, et non ```__global__``` pour effectuer les calculs sur le GPU depuis un appel du GPU.
 La couche de fonction d'activation retourne une matrice de même dimension que celle qui lui est fournie.
 
-## 3.5 Exemple
+### 3.5 Exemple
 Voci ci-dessous un exemple de réalisation d'une convolution d'une matrice 8x8 par un kernel 5x5 suivie éventuellement d'une fonction d'activation, puis d'un _MeanPooling_:
 ![image](https://user-images.githubusercontent.com/94063629/149505445-78691e54-997d-4050-af17-7a51034525a7.png)
 Dans cet exemple, on choisit volontairement des matrices aux coefficients simples afin de pouvoir confirmer le bon déroulement des calculs: le kernel nul avec un 2 central permet notamment la vérification rapide des calculs sur une matrice unitaire.
