@@ -51,7 +51,7 @@ La lecture de cet article apporte les informations nécessaires pour comprendre 
 
 https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architecture
 
-<h1 align=left><img src="LeNet-5.png"></h1>
+![LeNet-5](https://user-images.githubusercontent.com/75682374/149537925-7facd228-d0c7-4f33-b43d-17e5f4afd91f.png)
 
 
 ## 2- Partie 1. Prise en main de Cuda : Addition et Multiplication de matrices
