@@ -58,7 +58,7 @@ https://www.datasciencecentral.com/profiles/blogs/lenet-5-a-classic-cnn-architec
 
 ### 2.1. Création de matrice
 Dans tout le projet, que ce soit sur CPU ou GPU, on souhaite représenter les matrices sous forme de listes constituées des lignes de la matrice.
-Dans la fonction d'initialisation, on initialise la matrice **N*P** avec des valeurs aléatoires.
+Dans la fonction d'initialisation, on initialise la matrice **NxP** avec des valeurs aléatoires.
 ![image](https://user-images.githubusercontent.com/94063629/148687288-f1d8b3a1-a6b9-4ab7-af0a-11b4140eb562.png)
 
 ### 2.2. Affichage de matrice sous forme conventionnelle
