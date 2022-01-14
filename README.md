@@ -185,4 +185,4 @@ Après avoir entraîné le réseau dans le notebook et récupéré les poids et 
 Le réseau LeNet5 est désormais entièrement fonctionnel pour une image d'entrée de dimensions 32x32.
 
 
-Cette partie n'est pas encore complètement terminée. La création du réseau est faite, mais la liaison avec les poids pas encore. Il reste à finir cette partie à finir pour qu le réseau puisse être totalement fonctionnel. 
+Cette partie n'est pas encore complètement terminée. La création du réseau est faite et fonctionne au vu des différents tests, mais la liaison avec les poids pas encore... Il reste à finir cette partie à finir pour qu le réseau puisse être totalement fonctionnel. 
