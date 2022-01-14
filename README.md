@@ -31,7 +31,7 @@ Vous n'avez donc plus qu'à l'exécuter, et là encore, rien de plus simple. Lan
 ./nomdufichier
 ```
 
-PS: Pour que ces commandes fonctionnent il faut bien sûr que vous soyez dans votre dossier de travail. Vous pouvez vous déplacer facilement dans les dossier grâce à la commande "cd".
+PS: Pour que ces commandes fonctionnent il faut bien sûr que vous soyez dans votre dossier de travail. Vous pouvez vous déplacer facilement dans les dossiers grâce à la commande "cd".
 
 
 ## 1- Objectif
