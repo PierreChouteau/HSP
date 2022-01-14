@@ -175,7 +175,9 @@ En effet, dans ce projet, on ne désire pas créer la fonction d'entrainement du
 
 ### 4.2. Création des fonctions manquantes
 On construit le réseau en ajoutant couches de convolution et de _MeanPooling_. Il est également nécessaire de créer une couche de _Dense_ effectuant l'opération **W.x + b** où W sont les poids et b, les biais appliqués à l'image d'entrée x.
-Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU. En outre, afin de prévoir les cas où les matrices **W** et **x** ne sont pas carrées, on se propose d'introduire une nouvelle fonction de multiplication, basée sur le même principe que celle créée plus haut sur GPU, mais effectuant la multiplication d'une matrice **NxP** par une matrice **PxM** pour donner une matrice résultante **NxM** (celle-ci se trouve dans le fichier _Partie3.cu_.
+Cette fonction fait intervenir les fonctions de multiplication et d'addition sur le GPU.
+
+En outre, afin de prévoir les cas où les matrices **W** et **x** ne sont pas carrées, on se propose d'introduire une nouvelle fonction de multiplication (nommée _cudaMatrixMultGeneral_), basée sur le même principe que celle créée plus haut sur GPU, mais effectuant la multiplication d'une matrice **NxP** par une matrice **PxM** pour donner une matrice résultante **NxM** (celle-ci se trouve dans le fichier _Partie3.cu_).
 
 ### 4.3. Importation du dataset MNIST et affichage des données en console
 ### 4.4. Export des poids dans un fichier .h5
